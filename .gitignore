@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Estado local do protótipo (save da partida e sessões avulsas de teste)
+prototipo/saves/
+prototipo/logs/sessao_*.jsonl
+
+# Imagens intermediárias geradas pelo relatorio/gerar_pdf.ps1
+relatorio/img/
+
+# Anotações internas do grupo
+MEMORIA.md

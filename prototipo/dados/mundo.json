@@ -1,0 +1,86 @@
+{
+  "cena": {
+    "local": "Praça do Pelourinho, em Cinzaforte, cidade dominada pela Ira",
+    "situacao": "Uma multidão furiosa cerca Tomás, acusado de roubar um amuleto de ouro do mercador Odran. A Capitã Brenna quer enforcá-lo agora mesmo. O inquisitor acaba de chegar à praça.",
+    "npc_inicial": "tomas"
+  },
+  "npcs": [
+    {
+      "id": "tomas",
+      "nome": "Tomás",
+      "descricao": "Ferreiro de 30 anos, magro, com as mãos amarradas e o rosto machucado pela multidão.",
+      "personalidade": "Nervoso, honesto por natureza, covarde diante de violência, fala rápido quando tem medo.",
+      "objetivo": "Sair vivo da praça e voltar para a filha doente.",
+      "segredo": "Roubou mesmo o amuleto, para vendê-lo e pagar o remédio da filha. Viu Odran fazendo um ritual com moedas à meia-noite.",
+      "reage_bem_a": ["compaixao", "suborno"],
+      "relacao": 0,
+      "ouro": 2
+    },
+    {
+      "id": "brenna",
+      "nome": "Capitã Brenna",
+      "descricao": "Capitã da guarda de Cinzaforte, armadura amassada, cicatriz no queixo e mão sempre no cabo da espada.",
+      "personalidade": "Impaciente, violenta, respeita apenas força. A Ira da cidade já a consumiu em parte.",
+      "objetivo": "Punir Tomás publicamente para mostrar que a guarda manda na cidade.",
+      "segredo": "Recebe ouro de Odran para prender quem ele manda.",
+      "reage_bem_a": ["violencia", "ameaca"],
+      "relacao": 0,
+      "ouro": 40
+    },
+    {
+      "id": "odran",
+      "nome": "Odran, o Mercador",
+      "descricao": "Mercador gordo e sorridente, anéis em todos os dedos, veste roupas finas demais para uma cidade em ruínas.",
+      "personalidade": "Educado na superfície, calculista, tudo para ele tem um preço. Aceita qualquer acordo que o enriqueça.",
+      "objetivo": "Recuperar o amuleto e lucrar com a situação.",
+      "segredo": "O amuleto é o foco de um culto à Avareza. Odran alimenta a manifestação do pecado com o ouro da cidade.",
+      "reage_bem_a": ["suborno", "ganancia", "negociacao"],
+      "relacao": 0,
+      "ouro": 120
+    }
+  ],
+  "manifestacoes": {
+    "ira": {
+      "nome": "A Fera",
+      "persona": "Voz rouca e faminta, fala em frases curtas, despreza a fraqueza e a piedade.",
+      "poder": "força brutal e golpes que ninguém consegue aparar",
+      "fala_reserva": "Isso. Deixe o sangue ferver. Com a minha força ninguém vai te deter... só não me peça para parar."
+    },
+    "avareza": {
+      "nome": "O Mercador",
+      "persona": "Voz macia e sorridente, fala como quem fecha um negócio e sempre lembra que tudo tem um preço.",
+      "poder": "acesso a riquezas e acordos que ninguém mais conseguiria",
+      "fala_reserva": "Tudo tem um preço, inquisitor. Eu posso te dar o mundo... e cobrar só um pedaço da sua alma."
+    },
+    "inveja": {
+      "nome": "O Reflexo",
+      "persona": "Voz que imita a do próprio inquisitor, ressentida com tudo que os outros possuem.",
+      "poder": "copiar as habilidades de quem você admira",
+      "fala_reserva": "Por que eles têm o que você não tem? Deixe-me tomar tudo para você."
+    },
+    "preguica": {
+      "nome": "O Adormecido",
+      "persona": "Voz lenta, bocejante, convida ao descanso eterno.",
+      "poder": "desacelerar o tempo ao seu redor",
+      "fala_reserva": "Pra que lutar? Descanse... eu faço o mundo esperar por você."
+    },
+    "luxuria": {
+      "nome": "O Sedutor",
+      "persona": "Voz doce e envolvente, promete que todos farão o que você quiser.",
+      "poder": "dobrar desejos e vontades alheias",
+      "fala_reserva": "Eles vão te amar, inquisitor. Vão fazer qualquer coisa... basta você me deixar entrar."
+    },
+    "gula": {
+      "nome": "O Devorador",
+      "persona": "Voz úmida e faminta, nunca está satisfeita.",
+      "poder": "absorver a energia de tudo que você derrota",
+      "fala_reserva": "Mais. Sempre mais. Consuma tudo e eu te farei inteiro."
+    },
+    "orgulho": {
+      "nome": "O Rei",
+      "persona": "Voz solene e fria, trata todos como súditos.",
+      "poder": "impor sua vontade a quem estiver diante de você",
+      "fala_reserva": "Ajoelhe-os. Você nasceu para reinar, e eu vou coroá-lo."
+    }
+  }
+}

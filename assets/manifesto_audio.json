@@ -1,0 +1,203 @@
+{
+  "narrador_intro": {
+    "id": "narrador_intro",
+    "personagem": "Narrador",
+    "texto": "Cinzaforte, cidade tomada pela Ira. Uma multidão furiosa cerca Tomás, acusado de roubar um amuleto de ouro do mercador Odran. A Capitã Brenna quer enforcá-lo agora mesmo.",
+    "origem": "texto da cena (dados/mundo.json)",
+    "sintese": {
+      "length_scale": 1.1
+    },
+    "pausas": {
+      "pausa_frase": 0.35,
+      "pausa_reticencias": 0.5
+    },
+    "efeitos": "altura -0,9 semitom; pausas de 0,35 s entre frases",
+    "principal": true,
+    "arquivo": "assets/audio/narrador_intro.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 11.2,
+    "tempo_geracao_s": 0.37,
+    "brilho_hz": 431,
+    "energia_abaixo_300hz_pct": 60.4,
+    "energia_acima_4khz_pct": 1.0,
+    "gerado_em": "2026-09-13T21:15:46"
+  },
+  "tomas_filha": {
+    "id": "tomas_filha",
+    "personagem": "Tomás",
+    "texto": "Minha filha está doente... Precisei comprar remédio urgente. Prometo pagar o Odran de volta assim que conseguir!",
+    "origem": "fala gerada por qwen2.5:7b (prototipo/logs/v2_prompt-ajustado_qwen2-5-7b.jsonl)",
+    "sintese": {
+      "length_scale": 1.02,
+      "noise_scale": 0.78,
+      "noise_w_scale": 0.95
+    },
+    "pausas": {
+      "pausa_frase": 0.28,
+      "pausa_reticencias": 0.55
+    },
+    "efeitos": "fala frase a frase (pausa de 0,55 s nas reticências), mais variação de entonação (noise 0,78), altura +0,7 semitom, ambiente leve",
+    "principal": true,
+    "arquivo": "assets/audio/tomas_filha.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 7.3,
+    "tempo_geracao_s": 0.31,
+    "brilho_hz": 467,
+    "energia_abaixo_300hz_pct": 65.3,
+    "energia_acima_4khz_pct": 1.4,
+    "gerado_em": "2026-09-13T21:15:46"
+  },
+  "odran_preco": {
+    "id": "odran_preco",
+    "personagem": "Odran, o Mercador",
+    "texto": "Hmmm, 20 moedas? Isso não é nem um começo para alguém que tem um futuro brilhante. Que tal 50?",
+    "origem": "fala gerada por qwen2.5:7b (prototipo/logs/v2_prompt-ajustado_qwen2-5-7b.jsonl)",
+    "sintese": {
+      "length_scale": 1.15
+    },
+    "pausas": {
+      "pausa_frase": 0.3,
+      "pausa_reticencias": 0.5
+    },
+    "efeitos": "altura -1,4 semitom; pausas de 0,3 s",
+    "principal": true,
+    "arquivo": "assets/audio/odran_preco.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 8.0,
+    "tempo_geracao_s": 0.23,
+    "brilho_hz": 448,
+    "energia_abaixo_300hz_pct": 68.4,
+    "energia_acima_4khz_pct": 1.2,
+    "gerado_em": "2026-09-13T21:15:47"
+  },
+  "fera_desperta": {
+    "id": "fera_desperta",
+    "personagem": "A Fera (manifestação da Ira)",
+    "texto": "Sua sede de sangue está apenas começando. Quer saber o preço do poder que eu posso dar? A sua alma, talvez. A Ira não é barata, inquisidor.",
+    "origem": "fala gerada por llama3.2:3b (prototipo/logs/v1_prompt-original_llama3-2-3b.jsonl), trecho",
+    "sintese": {
+      "length_scale": 1.08,
+      "noise_scale": 0.85,
+      "noise_w_scale": 1.0
+    },
+    "pausas": {
+      "pausa_frase": 0.45,
+      "pausa_reticencias": 0.7
+    },
+    "efeitos": "altura -5,5 semitons; segunda voz desafinada (+4%, 35 ms); rosnado por modulação em anel (33 Hz); saturação; passa-baixa 3 kHz; sussurro que segue a fala; 0,9 s de silêncio inicial; reverb de 2,6 s; drone grave (43/64 Hz)",
+    "principal": true,
+    "arquivo": "assets/audio/fera_desperta.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 17.0,
+    "tempo_geracao_s": 1.13,
+    "brilho_hz": 364,
+    "energia_abaixo_300hz_pct": 69.6,
+    "energia_acima_4khz_pct": 0.9,
+    "gerado_em": "2026-09-13T21:15:48"
+  },
+  "fera_v2_abismo": {
+    "id": "fera_v2_abismo",
+    "personagem": "A Fera",
+    "texto": "Sua sede de sangue está apenas começando. Quer saber o preço do poder que eu posso dar? A sua alma, talvez. A Ira não é barata, inquisidor.",
+    "origem": "fala gerada por llama3.2:3b (prototipo/logs/v1_prompt-original_llama3-2-3b.jsonl), trecho",
+    "sintese": {
+      "length_scale": 1.0,
+      "noise_scale": 0.85
+    },
+    "pausas": {
+      "pausa_frase": 0.5,
+      "pausa_reticencias": 0.8
+    },
+    "efeitos": "mais grave (-8 semitons), voz dupla mais afastada, reverb de catedral (3,4 s), drone mais alto",
+    "principal": false,
+    "arquivo": "assets/audio/variantes/fera_v2_abismo.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 20.6,
+    "tempo_geracao_s": 0.56,
+    "brilho_hz": 193,
+    "energia_abaixo_300hz_pct": 82.8,
+    "energia_acima_4khz_pct": 0.0,
+    "gerado_em": "2026-09-13T21:15:48"
+  },
+  "fera_v3_sussurro": {
+    "id": "fera_v3_sussurro",
+    "personagem": "A Fera",
+    "texto": "Sua sede de sangue está apenas começando. Quer saber o preço do poder que eu posso dar? A sua alma, talvez. A Ira não é barata, inquisidor.",
+    "origem": "fala gerada por llama3.2:3b (prototipo/logs/v1_prompt-original_llama3-2-3b.jsonl), trecho",
+    "sintese": {
+      "length_scale": 1.12,
+      "noise_scale": 0.9
+    },
+    "pausas": {
+      "pausa_frase": 0.45,
+      "pausa_reticencias": 0.7
+    },
+    "efeitos": "sussurro rouco dominante com voz dupla, como algo falando dentro da cabeça",
+    "principal": false,
+    "arquivo": "assets/audio/variantes/fera_v3_sussurro.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 14.4,
+    "tempo_geracao_s": 0.87,
+    "brilho_hz": 2087,
+    "energia_abaixo_300hz_pct": 31.2,
+    "energia_acima_4khz_pct": 18.8,
+    "gerado_em": "2026-09-13T21:15:49"
+  },
+  "tomas_v2_calmo": {
+    "id": "tomas_v2_calmo",
+    "personagem": "Tomás",
+    "texto": "Minha filha está doente... Precisei comprar remédio urgente. Prometo pagar o Odran de volta assim que conseguir!",
+    "origem": "fala gerada por qwen2.5:7b (prototipo/logs/v2_prompt-ajustado_qwen2-5-7b.jsonl)",
+    "sintese": {
+      "length_scale": 1.12,
+      "noise_scale": 0.65
+    },
+    "pausas": {
+      "pausa_frase": 0.35,
+      "pausa_reticencias": 0.7
+    },
+    "efeitos": "mais lento e cansado, pausas longas, sem mudar a altura",
+    "principal": false,
+    "arquivo": "assets/audio/variantes/tomas_v2_calmo.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 7.9,
+    "tempo_geracao_s": 0.32,
+    "brilho_hz": 541,
+    "energia_abaixo_300hz_pct": 65.5,
+    "energia_acima_4khz_pct": 2.3,
+    "gerado_em": "2026-09-13T21:15:50"
+  },
+  "tomas_v3_nervoso": {
+    "id": "tomas_v3_nervoso",
+    "personagem": "Tomás",
+    "texto": "Minha filha está doente... Precisei comprar remédio urgente. Prometo pagar o Odran de volta assim que conseguir!",
+    "origem": "fala gerada por qwen2.5:7b (prototipo/logs/v2_prompt-ajustado_qwen2-5-7b.jsonl)",
+    "sintese": {
+      "length_scale": 0.95,
+      "noise_scale": 0.9,
+      "noise_w_scale": 1.1
+    },
+    "pausas": {
+      "pausa_frase": 0.2,
+      "pausa_reticencias": 0.45
+    },
+    "efeitos": "mais rápido e agudo (+1,3 semitom), entonação irregular",
+    "principal": false,
+    "arquivo": "assets/audio/variantes/tomas_v3_nervoso.wav",
+    "ferramenta": "Piper TTS 1.8 (local, ONNX) + pós-processamento numpy",
+    "modelo": "rhasspy/piper-voices pt_BR-faber-medium",
+    "duracao_s": 6.7,
+    "tempo_geracao_s": 0.26,
+    "brilho_hz": 485,
+    "energia_abaixo_300hz_pct": 64.0,
+    "energia_acima_4khz_pct": 1.4,
+    "gerado_em": "2026-09-13T21:15:50"
+  }
+}

@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>OS 7 PECADOS — Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ouro: #d8b36a;
+    --ouro-claro: #f1d9a0;
+    --sangue: #a3231f;
+    --brasa: #e0482f;
+    --avareza: #c9a227;
+    --pergaminho: #e9dfc9;
+    --texto: #efe6d4;
+    --texto-2: #b9ad96;
+    --painel: rgba(14, 10, 9, 0.82);
+    --borda: rgba(216, 179, 106, 0.45);
+    --ia: #37d3e6;
+    --anota: #ffd54a;
+    --titulo: "Cinzel", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    --corpo: "EB Garamond", "Palatino Linotype", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #000; }
+  .tela {
+    position: relative; width: 1920px; height: 1080px; overflow: hidden;
+    font-family: var(--corpo); color: var(--texto); background: #0b0807;
+  }
+  .fundo { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .vinheta { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.85) 100%); }
+  .painel { position: absolute; background: var(--painel); border: 1px solid var(--borda); border-radius: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.6); }
+  .rotulo { font-family: var(--titulo); letter-spacing: .12em; text-transform: uppercase; font-size: 15px; color: var(--ouro); }
+  .barra { height: 14px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); border-radius: 2px; overflow: hidden; }
+  .barra > i { display: block; height: 100%; }
+
+  /* ---------- MENU ---------- */
+  #menu .fundo { background-image: url("../assets/imagens/menu_fundo.png"); }
+  #menu .escurece { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,3,3,.92) 0%, rgba(5,3,3,.7) 34%, transparent 62%); }
+  #titulo { position: absolute; left: 130px; top: 150px; }
+  #titulo h1 { margin: 0; font-family: var(--titulo); font-weight: 900; font-size: 118px; line-height: .92; color: var(--ouro-claro);
+               text-shadow: 0 0 30px rgba(163,35,31,.55), 0 4px 0 #3b120f; letter-spacing: .02em; }
+  #titulo h1 span { display: block; font-size: 64px; color: var(--ouro); letter-spacing: .12em; }
+  #tagline { position: absolute; left: 134px; top: 420px; width: 620px; font-style: italic; font-size: 30px; color: var(--texto-2); }
+  #opcoes { position: absolute; left: 130px; top: 540px; display: flex; flex-direction: column; gap: 6px; }
+  .opcao { font-family: var(--titulo); font-size: 34px; color: var(--texto-2); padding: 10px 26px; width: 520px; border-left: 3px solid transparent; }
+  .opcao small { display: block; font-family: var(--corpo); font-size: 20px; text-transform: none; letter-spacing: 0; color: #8c826f; }
+  .opcao.ativa { color: var(--ouro-claro); border-left-color: var(--brasa); background: linear-gradient(90deg, rgba(163,35,31,.35), transparent); }
+  #status-ia { left: 130px; bottom: 60px; padding: 14px 20px; font-size: 21px; display: flex; gap: 14px; align-items: center; }
+  .ponto { width: 12px; height: 12px; border-radius: 50%; background: #5fd35f; box-shadow: 0 0 10px #5fd35f; }
+  #versao { position: absolute; right: 50px; bottom: 50px; font-size: 20px; color: #8c826f; }
+
+  /* ---------- GAMEPLAY ---------- */
+  #gameplay .fundo { background-image: url("../assets/imagens/cena_praca.png"); }
+  #hud-jogador { left: 28px; top: 28px; width: 420px; padding: 18px 22px; }
+  #hud-jogador .nome { font-family: var(--titulo); font-size: 26px; color: var(--ouro-claro); }
+  #hud-vida { margin: 10px 0 4px; }
+  #hud-vida i { width: 78%; background: linear-gradient(90deg, #6e0f0c, #d43a2a); }
+  .linha { display: flex; justify-content: space-between; font-size: 19px; color: var(--texto-2); }
+  #hud-ouro { color: var(--ouro-claro); }
+  #hud-marcas { margin-top: 8px; font-size: 18px; font-style: italic; color: #e38b74; }
+  #local { left: 50%; transform: translateX(-50%); top: 28px; padding: 12px 40px; text-align: center; }
+  #local .nome { font-family: var(--titulo); font-size: 27px; color: var(--ouro-claro); }
+  #local .sub { font-size: 19px; color: #e07a62; letter-spacing: .08em; }
+  #corrupcao { right: 28px; top: 28px; width: 380px; padding: 16px 20px; }
+  .pecado { display: grid; grid-template-columns: 96px 1fr 34px; align-items: center; gap: 10px; font-size: 19px; margin-top: 7px; color: var(--texto-2); }
+  .pecado b { font-weight: 600; text-align: right; color: var(--texto); }
+  .pecado .barra { height: 10px; }
+  .pecado.forte { color: var(--texto); }
+  #sussurro { right: 28px; top: 405px; width: 470px; padding: 16px; display: flex; gap: 16px; border-color: rgba(224,72,47,.7);
+              background: linear-gradient(135deg, rgba(60,8,6,.92), rgba(14,10,9,.9)); }
+  #sussurro img { width: 108px; height: 108px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brasa); box-shadow: 0 0 22px rgba(224,72,47,.6); }
+  #sussurro .quem { font-family: var(--titulo); color: var(--brasa); font-size: 20px; }
+  #sussurro p { margin: 4px 0 0; font-size: 20px; font-style: italic; line-height: 1.25; }
+  #leitura { left: 28px; top: 470px; width: 400px; padding: 14px 18px; font-size: 19px; }
+  #leitura .chip { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 3px; background: rgba(201,162,39,.2); border: 1px solid var(--avareza); color: var(--ouro-claro); }
+  #memoria-toast { left: 28px; top: 600px; width: 400px; padding: 12px 18px; font-size: 19px; color: var(--texto-2); }
+  #memoria-toast b { color: var(--pergaminho); }
+  #dialogo { left: 300px; right: 300px; bottom: 28px; height: 318px; padding: 22px 30px 20px 290px; }
+  #retrato { position: absolute; left: 22px; bottom: 22px; width: 246px; height: 290px; object-fit: cover; object-position: top;
+             border: 2px solid var(--ouro); border-radius: 4px; }
+  #npc-cabecalho { display: flex; align-items: baseline; gap: 18px; }
+  #npc-nome { font-family: var(--titulo); font-size: 30px; color: var(--ouro-claro); }
+  #npc-relacao { font-size: 18px; padding: 2px 10px; border: 1px solid #a05a3c; color: #e79a7a; border-radius: 3px; }
+  #npc-emocao { font-size: 18px; color: var(--texto-2); font-style: italic; }
+  #voz { margin-left: auto; font-size: 18px; color: var(--texto-2); display: flex; align-items: center; gap: 8px; }
+  #voz .onda { display: inline-flex; gap: 3px; align-items: center; height: 20px; }
+  #voz .onda i { width: 3px; background: var(--ouro); border-radius: 2px; }
+  #fala { margin: 12px 0 0; font-size: 26px; line-height: 1.3; min-height: 102px; }
+  #entrada { display: flex; gap: 12px; margin-top: 10px; }
+  #campo { flex: 1; height: 50px; border: 1px solid var(--borda); background: rgba(0,0,0,.55); border-radius: 4px; padding: 0 16px;
+           display: flex; align-items: center; font-size: 22px; color: var(--pergaminho); }
+  #campo::after { content: ""; width: 2px; height: 26px; margin-left: 3px; background: var(--ouro-claro); }
+  .botao { height: 50px; padding: 0 18px; border: 1px solid var(--borda); background: rgba(216,179,106,.12); border-radius: 4px;
+           font-family: var(--titulo); font-size: 16px; letter-spacing: .08em; color: var(--ouro-claro); display: flex; align-items: center; }
+  #acoes { display: flex; gap: 10px; margin-top: 10px; }
+  #acoes .botao { height: 38px; font-size: 14px; }
+  #acoes .botao.perigo { border-color: rgba(224,72,47,.6); color: #f0a08a; }
+
+  /* ---------- ESPELHO DA ALMA ---------- */
+  #espelho .fundo { background-image: url("../assets/imagens/cena_praca.png"); filter: blur(10px) brightness(.35) saturate(.6); transform: scale(1.05); }
+  #espelho-titulo { position: absolute; top: 40px; width: 100%; text-align: center; }
+  #espelho-titulo h2 { margin: 0; font-family: var(--titulo); font-size: 56px; color: var(--ouro-claro); letter-spacing: .12em; }
+  #espelho-titulo p { margin: 4px 0 0; font-size: 24px; font-style: italic; color: var(--texto-2); }
+  #medidores { left: 90px; top: 180px; width: 640px; padding: 26px 34px; }
+  #medidores .pecado { grid-template-columns: 130px 1fr 44px; font-size: 24px; margin-top: 16px; }
+  #medidores .pecado .barra { height: 16px; }
+  .limiar { position: relative; }
+  .limiar::after { content: ""; position: absolute; left: 40%; top: -4px; bottom: -4px; width: 2px; background: rgba(255,255,255,.55); }
+  #legenda-limiar { margin-top: 18px; font-size: 19px; color: var(--texto-2); }
+  #aparencia { left: 90px; top: 700px; width: 640px; padding: 22px 34px; font-size: 22px; }
+  #aparencia p { margin: 8px 0 0; font-style: italic; color: #e38b74; }
+  #manifestacoes { position: absolute; left: 780px; top: 180px; width: 1050px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .carta { position: relative; height: 420px; padding: 0; overflow: hidden; }
+  .carta img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .carta .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 22px; background: linear-gradient(transparent, rgba(0,0,0,.95) 35%); }
+  .carta h3 { margin: 0; font-family: var(--titulo); font-size: 30px; color: var(--ouro-claro); }
+  .carta .estado { font-size: 20px; color: var(--brasa); }
+  .carta p { margin: 6px 0 0; font-size: 20px; line-height: 1.25; }
+  .carta.dormente img { filter: grayscale(1) brightness(.45); }
+  .carta.dormente .estado { color: var(--texto-2); }
+  #bloqueadas { position: absolute; left: 780px; top: 624px; width: 1050px; display: flex; gap: 14px; }
+  .bloq { flex: 1; height: 86px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--painel);
+          border: 1px dashed rgba(216,179,106,.35); border-radius: 6px; font-family: var(--titulo); color: #7d7361; font-size: 17px; }
+  .bloq span { font-size: 30px; }
+  #finais { left: 780px; top: 740px; width: 1050px; padding: 22px 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .final h4 { margin: 0; font-family: var(--titulo); font-size: 21px; color: var(--ouro-claro); }
+  .final p { margin: 4px 0 0; font-size: 19px; color: var(--texto-2); }
+  .final .barra { margin-top: 8px; height: 10px; }
+  #voltar { position: absolute; left: 50%; transform: translateX(-50%); bottom: 36px; font-size: 20px; color: var(--texto-2); }
+
+  /* ---------- ANOTAÇÕES ---------- */
+  .anotacoes { position: absolute; inset: 0; pointer-events: none; }
+  .nota { position: absolute; max-width: 300px; padding: 6px 12px 7px 10px; background: var(--anota); color: #111; border-radius: 4px;
+          font: 600 19px/1.2 "Segoe UI", Arial, sans-serif; box-shadow: 0 3px 12px rgba(0,0,0,.6); display: flex; gap: 8px; align-items: flex-start; }
+  .nota .n { flex: none; min-width: 26px; height: 26px; border-radius: 50%; background: #111; color: var(--anota); display: grid; place-items: center; font-size: 15px; }
+  .nota.ia { background: var(--ia); }
+  .nota.ia .n { color: var(--ia); }
+  .nota small { display: block; font-weight: 400; font-size: 15px; }
+  .legenda { position: absolute; left: 50%; transform: translateX(-50%); bottom: 6px; padding: 5px 14px; background: rgba(0,0,0,.85); border-radius: 4px;
+             font: 15px "Segoe UI", Arial, sans-serif; color: #eee; display: flex; gap: 18px; white-space: nowrap; }
+  .legenda i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  body:not(.anotado) .anotacoes { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ================= TELA 1: MENU PRINCIPAL ================= -->
+<section class="tela" id="menu" hidden>
+  <div class="fundo" id="menu-arte"></div>
+  <div class="escurece"></div>
+  <div id="titulo"><h1><span>OS</span>7 PECADOS</h1></div>
+  <div id="tagline">“Você não enfrenta os pecados. Você decide qual deles vai se tornar você.”</div>
+  <nav id="opcoes">
+    <div class="opcao ativa" id="op-novo">Novo Jogo</div>
+    <div class="opcao" id="op-continuar">Continuar <small>Cinzaforte · Ira 56 · A Fera desperta</small></div>
+    <div class="opcao" id="op-opcoes">Opções <small>Modelo de IA, voz, dificuldade</small></div>
+    <div class="opcao">Créditos</div>
+    <div class="opcao">Sair</div>
+  </nav>
+  <div class="painel" id="status-ia"><span class="ponto"></span><span>Motor narrativo: <b>qwen2.5:7b</b> via Ollama local · carregado</span></div>
+  <div id="versao">POC v0.1 · Checkpoint 4 · PLN</div>
+  <div class="anotacoes"></div>
+</section>
+
+<!-- ================= TELA 2: GAMEPLAY ================= -->
+<section class="tela" id="gameplay" hidden>
+  <div class="fundo" id="cenario"></div>
+  <div class="vinheta"></div>
+
+  <div class="painel" id="hud-jogador">
+    <div class="nome">Inquisitor</div>
+    <div class="barra" id="hud-vida"><i></i></div>
+    <div class="linha"><span>Vida 78 / 100</span><span id="hud-ouro">◉ 30 moedas</span></div>
+    <div id="hud-marcas">Marcas: veias escuras pulsando nos braços</div>
+  </div>
+
+  <div class="painel" id="local">
+    <div class="nome">Praça do Pelourinho</div>
+    <div class="sub">CINZAFORTE · TERRITÓRIO DA IRA</div>
+  </div>
+
+  <div class="painel" id="corrupcao">
+    <div class="rotulo">Corrupção</div>
+    <div class="pecado forte" id="p-ira"><span>Ira</span><div class="barra limiar"><i style="width:56%;background:linear-gradient(90deg,#6e0f0c,#e0482f)"></i></div><b>56</b></div>
+    <div class="pecado forte" id="p-avareza"><span>Avareza</span><div class="barra limiar"><i style="width:28%;background:linear-gradient(90deg,#6b5310,#c9a227)"></i></div><b>28</b></div>
+    <div class="pecado"><span>Inveja</span><div class="barra"><i style="width:0"></i></div><b>0</b></div>
+    <div class="pecado"><span>Preguiça</span><div class="barra"><i style="width:0"></i></div><b>0</b></div>
+    <div class="pecado"><span>Luxúria</span><div class="barra"><i style="width:4%;background:#8a4f86"></i></div><b>4</b></div>
+    <div class="pecado"><span>Gula</span><div class="barra"><i style="width:0"></i></div><b>0</b></div>
+    <div class="pecado"><span>Orgulho</span><div class="barra"><i style="width:8%;background:#7b7fb8"></i></div><b>8</b></div>
+  </div>
+
+  <div class="painel" id="sussurro">
+    <img id="sussurro-img" src="../assets/imagens/demonio_fera.png" alt="A Fera">
+    <div>
+      <div class="quem">A Fera sussurra…</div>
+      <p id="sussurro-texto">“Sua sede de sangue está apenas começando. A Ira não é barata, inquisidor.”</p>
+    </div>
+  </div>
+
+  <div class="painel" id="leitura">
+    <div class="rotulo">Intenção lida</div>
+    <span class="chip">Ganância · intensidade 2</span>
+    <div style="margin-top:6px">Avareza <b style="color:var(--ouro-claro)">+10</b> · Relação com Odran <b style="color:#9fd39f">+6</b></div>
+  </div>
+
+  <div class="painel" id="memoria-toast">✎ <b>Odran lembrará disso:</b> “O inquisitor quer ouro pelo silêncio dele.”</div>
+
+  <div class="painel" id="dialogo">
+    <img id="retrato" src="../assets/imagens/retrato_odran.png" alt="Odran">
+    <div id="npc-cabecalho">
+      <span id="npc-nome">Odran, o Mercador</span>
+      <span id="npc-relacao">Desconfia · −33</span>
+      <span id="npc-emocao">calculista</span>
+      <span id="voz"><span class="onda"><i style="height:8px"></i><i style="height:18px"></i><i style="height:12px"></i><i style="height:20px"></i><i style="height:9px"></i><i style="height:15px"></i></span>voz</span>
+    </div>
+    <p id="fala">“Hmmm, 20 moedas? Isso não é nem um começo para alguém que tem um futuro brilhante. Que tal 50?”</p>
+    <div id="entrada">
+      <div id="campo">Quanto você me paga pra eu esquecer que você existe?</div>
+      <div class="botao">Falar ⏎</div>
+    </div>
+    <div id="acoes">
+      <div class="botao perigo">Atacar</div>
+      <div class="botao">Roubar</div>
+      <div class="botao">Doar</div>
+      <div class="botao">Memórias</div>
+      <div class="botao" id="btn-espelho">Espelho da Alma [Tab]</div>
+    </div>
+  </div>
+  <div class="anotacoes"></div>
+</section>
+
+<!-- ================= TELA 3: ESPELHO DA ALMA ================= -->
+<section class="tela" id="espelho" hidden>
+  <div class="fundo"></div>
+  <div class="vinheta"></div>
+  <div id="espelho-titulo"><h2>Espelho da Alma</h2><p>O que você está se tornando</p></div>
+
+  <div class="painel" id="medidores">
+    <div class="rotulo">Os sete pecados</div>
+    <div class="pecado forte"><span>Ira</span><div class="barra limiar"><i style="width:56%;background:linear-gradient(90deg,#6e0f0c,#e0482f)"></i></div><b>56</b></div>
+    <div class="pecado forte"><span>Avareza</span><div class="barra limiar"><i style="width:28%;background:linear-gradient(90deg,#6b5310,#c9a227)"></i></div><b>28</b></div>
+    <div class="pecado"><span>Inveja</span><div class="barra limiar"><i style="width:0"></i></div><b>0</b></div>
+    <div class="pecado"><span>Preguiça</span><div class="barra limiar"><i style="width:0"></i></div><b>0</b></div>
+    <div class="pecado"><span>Luxúria</span><div class="barra limiar"><i style="width:4%;background:#8a4f86"></i></div><b>4</b></div>
+    <div class="pecado"><span>Gula</span><div class="barra limiar"><i style="width:0"></i></div><b>0</b></div>
+    <div class="pecado"><span>Orgulho</span><div class="barra limiar"><i style="width:8%;background:#7b7fb8"></i></div><b>8</b></div>
+    <div id="legenda-limiar">│ marca branca = 40, limiar em que o pecado se manifesta · 100 = consumido</div>
+  </div>
+
+  <div class="painel" id="aparencia">
+    <div class="rotulo">Aparência</div>
+    <p>Veias escuras pulsando nos braços.</p>
+    <div style="margin-top:12px;font-size:20px;color:var(--texto-2)">Tomás <b style="color:#e79a7a">odeia (−37)</b> · Odran <b style="color:#e79a7a">desconfia (−33)</b> · Brenna <i>morta</i></div>
+  </div>
+
+  <div id="manifestacoes">
+    <div class="painel carta" id="carta-fera">
+      <img src="../assets/imagens/demonio_fera.png" alt="A Fera">
+      <div class="info">
+        <h3>A Fera</h3>
+        <div class="estado">DESPERTA · Ira 56</div>
+        <p><b>Poder:</b> força brutal e golpes que ninguém consegue aparar.<br><b>Preço:</b> +50% de Ira em cada ato violento.</p>
+      </div>
+    </div>
+    <div class="painel carta dormente" id="carta-mercador">
+      <img src="../assets/imagens/demonio_mercador.png" alt="O Mercador">
+      <div class="info">
+        <h3>O Mercador</h3>
+        <div class="estado">DORMENTE · Avareza 28 / 40</div>
+        <p><b>Poder:</b> riquezas e acordos que ninguém mais conseguiria.<br><b>Preço:</b> um pedaço da sua alma.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="bloqueadas">
+    <div class="bloq"><span>?</span>O Reflexo</div>
+    <div class="bloq"><span>?</span>O Adormecido</div>
+    <div class="bloq"><span>?</span>O Sedutor</div>
+    <div class="bloq"><span>?</span>O Devorador</div>
+    <div class="bloq"><span>?</span>O Rei</div>
+  </div>
+
+  <div class="painel" id="finais">
+    <div class="final"><h4>Redenção</h4><p>Em risco: Ira acima do limiar</p><div class="barra"><i style="width:30%;background:#6fae6f"></i></div></div>
+    <div class="final"><h4>Consumido pela Ira</h4><p>56 / 100</p><div class="barra"><i style="width:56%;background:#e0482f"></i></div></div>
+    <div class="final"><h4>O Oitavo Pecado</h4><p>??? · condição oculta</p><div class="barra"><i style="width:0"></i></div></div>
+  </div>
+  <div id="voltar">[Tab] voltar ao jogo</div>
+  <div class="anotacoes"></div>
+</section>
+
+<script>
+  // Anotações: cada nota aponta para um elemento real da tela; a seta é calculada pelo layout.
+  // tipo "ia" = conteúdo gerado por IA generativa (com a ferramenta), sem tipo = elemento de UI/HUD.
+  const ANOTACOES = {
+    menu: [
+      { alvo: "#menu-arte", x: 1180, y: 70, texto: "Arte de fundo do menu", sub: "Stable Diffusion XL 1.0 (local)", ia: true, ponto: [1500, 420] },
+      { alvo: "#titulo", x: 930, y: 250, texto: "Título do jogo", sub: "tipografia, feito à mão" },
+      { alvo: "#tagline", x: 830, y: 430, texto: "Tagline / premissa" },
+      { alvo: "#op-novo", x: 760, y: 548, texto: "Opção selecionada", sub: "destaque em brasa" },
+      { alvo: "#op-continuar", x: 760, y: 660, texto: "Continuar partida salva", sub: "resumo do save: região, pecado dominante" },
+      { alvo: "#op-opcoes", x: 760, y: 775, texto: "Opções", sub: "escolher modelo da LLM e voz TTS" },
+      { alvo: "#status-ia", x: 900, y: 930, texto: "Status do motor de IA", sub: "LLM qwen2.5:7b via Ollama, pronto antes de jogar", ia: true },
+    ],
+    gameplay: [
+      { alvo: "#cenario", x: 760, y: 230, texto: "Cenário da praça", sub: "Stable Diffusion XL 1.0", ia: true, ponto: [960, 360] },
+      { alvo: "#hud-vida", x: 480, y: 110, texto: "Barra de Vida" },
+      { alvo: "#hud-ouro", x: 470, y: 30, texto: "Ouro do jogador" },
+      { alvo: "#hud-marcas", x: 470, y: 180, texto: "Marcas de corrupção", sub: "aparência que os NPCs enxergam" },
+      { alvo: "#local", x: 1080, y: 150, texto: "Local e território", sub: "pecado que domina a região" },
+      { alvo: "#corrupcao", x: 1150, y: 270, texto: "Medidores dos 7 pecados", sub: "marca em 40 = manifestação" },
+      { alvo: "#sussurro-img", x: 1560, y: 580, texto: "Retrato do demônio", sub: "Stable Diffusion XL 1.0", ia: true },
+      { alvo: "#sussurro-texto", x: 1100, y: 470, texto: "Fala do Demônio Interior", sub: "LLM (Ollama) + voz Piper TTS", ia: true },
+      { alvo: "#leitura", x: 460, y: 390, texto: "Intenção classificada pela LLM", sub: "regras do código aplicam os pontos", ia: true },
+      { alvo: "#memoria-toast", x: 460, y: 700, texto: "Memória gravada no NPC", sub: "resumo gerado pela LLM", ia: true },
+      { alvo: "#retrato", x: 20, y: 800, texto: "Retrato do NPC", sub: "Stable Diffusion XL 1.0", ia: true },
+      { alvo: "#npc-relacao", x: 900, y: 650, texto: "Relação com o NPC" },
+      { alvo: "#voz", x: 1360, y: 650, texto: "Fala sendo narrada", sub: "Piper TTS pt_BR (local)", ia: true },
+      { alvo: "#fala", x: 1700, y: 760, texto: "Fala do NPC", sub: "gerada ao vivo por qwen2.5:7b", ia: true },
+      { alvo: "#campo", x: 1290, y: 992, texto: "Diálogo livre", sub: "o jogador digita o que quiser" },
+      { alvo: "#acoes", x: 20, y: 990, texto: "Ações rápidas" },
+    ],
+    espelho: [
+      { alvo: "#medidores", x: 330, y: 110, texto: "Medidores dos 7 pecados", sub: "valores decididos pelo código" },
+      { alvo: ".limiar", x: 20, y: 610, texto: "Limiar de manifestação (40)", ponto: [417, 552] },
+      { alvo: "#aparencia", x: 330, y: 930, texto: "Aparência e reputação", sub: "o que o mundo vê e lembra" },
+      { alvo: "#carta-fera", x: 1000, y: 200, texto: "Manifestação desperta", sub: "arte: Stable Diffusion XL 1.0", ia: true, ponto: [1036, 330] },
+      { alvo: "#carta-mercador", x: 1540, y: 200, texto: "Manifestação dormente", sub: "arte: Stable Diffusion XL 1.0", ia: true, ponto: [1574, 330] },
+      { alvo: "#bloqueadas", x: 440, y: 646, texto: "Pecados ainda ocultos" },
+      { alvo: "#finais", x: 1220, y: 970, texto: "Progresso rumo aos finais", sub: "Redenção, Consumido, Oitavo Pecado" },
+    ],
+  };
+
+  function pontoMaisProximo(r, x, y) {
+    return [Math.max(r.left, Math.min(x, r.right)), Math.max(r.top, Math.min(y, r.bottom))];
+  }
+
+  function anotar(tela) {
+    const camada = tela.querySelector(".anotacoes");
+    const base = tela.getBoundingClientRect();
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", 1920); svg.setAttribute("height", 1080);
+    svg.style.position = "absolute"; svg.style.inset = 0;
+    svg.innerHTML = `<defs>
+      <marker id="s-${tela.id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ffd54a"/></marker>
+      <marker id="i-${tela.id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#37d3e6"/></marker>
+    </defs>`;
+    camada.appendChild(svg);
+
+    let numero = 0;
+    ANOTACOES[tela.id].forEach((a) => {
+      const nota = document.createElement("div");
+      nota.className = "nota" + (a.ia ? " ia" : "");
+      nota.innerHTML = `<span class="n">${a.ia ? "IA" : ++numero}</span><span>${a.texto}${a.sub ? `<small>${a.sub}</small>` : ""}</span>`;
+      nota.style.left = a.x + "px"; nota.style.top = a.y + "px";
+      camada.appendChild(nota);
+
+      const rn = nota.getBoundingClientRect();
+      const alvo = tela.querySelector(a.alvo).getBoundingClientRect();
+      const r = { left: alvo.left - base.left, right: alvo.right - base.left, top: alvo.top - base.top, bottom: alvo.bottom - base.top };
+      const cx = rn.left - base.left + rn.width / 2, cy = rn.top - base.top + rn.height / 2;
+      const [tx, ty] = a.ponto || pontoMaisProximo(r, cx, cy);
+      const caixa = { left: rn.left - base.left, right: rn.right - base.left, top: rn.top - base.top, bottom: rn.bottom - base.top };
+      const [sx, sy] = pontoMaisProximo(caixa, tx, ty);
+      const cor = a.ia ? "#37d3e6" : "#ffd54a";
+      svg.insertAdjacentHTML("beforeend",
+        `<line x1="${sx}" y1="${sy}" x2="${tx}" y2="${ty}" stroke="#000" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+         <line x1="${sx}" y1="${sy}" x2="${tx}" y2="${ty}" stroke="${cor}" stroke-width="3" marker-end="url(#${a.ia ? "i" : "s"}-${tela.id})"/>`);
+    });
+
+    camada.insertAdjacentHTML("beforeend",
+      `<div class="legenda"><span><i style="background:#ffd54a"></i>Elemento de UI/HUD</span><span><i style="background:#37d3e6"></i>Conteúdo gerado por IA generativa (ferramenta indicada)</span><span>Mockup 16:9 · 1920×1080</span></div>`);
+  }
+
+  const params = new URLSearchParams(location.search);
+  const alvo = document.getElementById(params.get("tela") || "menu");
+  alvo.hidden = false;
+  if (params.has("anotado")) {
+    document.body.classList.add("anotado");
+    // Espera fontes e imagens para medir as posições certas.
+    Promise.all([document.fonts.ready, ...[...document.images].map(img => img.decode().catch(() => {}))]).then(() => anotar(alvo));
+  }
+</script>
+</body>
+</html>
