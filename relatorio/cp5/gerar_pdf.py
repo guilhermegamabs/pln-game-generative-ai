@@ -20,6 +20,7 @@ AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent.parent
 SAIDA = RAIZ / "OS_7_PECADOS_CP5.pdf"
 REPO = "https://github.com/guilhermegamabs/pln-game-generative-ai"
+VIDEO = "https://youtu.be/UdNIbnVAEzc"
 MESES = "janeiro fevereiro março abril maio junho julho agosto setembro outubro novembro dezembro".split()
 
 
@@ -116,7 +117,7 @@ def montar():
       <div><b>Integrantes</b>Guilherme Gama Bitencourt Souza · RM565293<br>Igor Thiago Nakajima Vieira · RM563632</div>
       <div><b>Data</b>{data}</div>
       <div style="grid-column: 1 / -1"><b>Repositório</b><a href="{REPO}" style="color:#f3dfae">{REPO.removeprefix("https://")}</a></div>
-      <div style="grid-column: 1 / -1"><b>Vídeos</b>PLN: <span class="pendente">[Grupo: link do vídeo de 2 a 5 min]</span> · Front-end: <span class="pendente">[Grupo: link do vídeo da arquitetura]</span></div>
+      <div style="grid-column: 1 / -1"><b>Vídeo de demonstração</b><a href="{VIDEO}" style="color:#f3dfae">{VIDEO.removeprefix("https://")}</a><br><span style="font-size:9pt">Um vídeo único para as duas disciplinas: o jogo em execução e, a partir de 3:45, a arquitetura da API (Front-end).</span></div>
     </div>
   </div>
 </section>
