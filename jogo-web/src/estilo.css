@@ -20,12 +20,14 @@ html, body, #root { margin: 0; height: 100%; background: #000; overflow: hidden;
 button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 0; text-align: left; }
 button:disabled { cursor: default; opacity: .45; }
 
-.moldura { position: fixed; inset: 0; display: grid; place-items: center; background: #000; }
+.moldura { position: fixed; inset: 0; overflow: hidden; background: #000; }
 .tela {
-  position: relative; width: 1920px; height: 1080px; flex: none; overflow: hidden; transform-origin: center;
+  position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0;
   font-family: var(--corpo); color: var(--texto); background: #0b0807;
 }
 .tela > section { position: absolute; inset: 0; }
+/* Telas de composição fixa (Espelho, Final) ficam num quadro 1920x1080 centralizado no palco. */
+.centro { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform: translate(-50%, -50%); }
 .fundo { position: absolute; inset: 0; background-size: cover; background-position: center; }
 .vinheta { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.85) 100%); }
 .painel { position: absolute; background: var(--painel); border: 1px solid var(--borda); border-radius: 6px;

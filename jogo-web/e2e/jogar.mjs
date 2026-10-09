@@ -146,6 +146,19 @@ try {
   await pagina.waitForFunction(() => document.querySelector('.opcoes')?.textContent?.includes('Terminada'))
   ok('menu mostra a partida salva como terminada')
 
+  // Janelas que não são 16:9 nem 1920 px (barra do navegador, notebook): o palco precisa ocupar tudo, sem faixa preta nem corte.
+  for (const [w, h] of [[1536, 730], [1280, 900], [2560, 1300]]) {
+    await pagina.setViewport({ width: w, height: h })
+    await new Promise((r) => setTimeout(r, 300))
+    const r = await pagina.$eval('.tela', (e) => {
+      const q = e.getBoundingClientRect()
+      return [q.left, q.top, q.width, q.height].map(Math.round)
+    })
+    if (r.join() !== [0, 0, w, h].join()) falhar(`em ${w}x${h} o palco ficou em ${r.join(', ')}`)
+  }
+  await pagina.setViewport({ width: 1920, height: 1080 })
+  ok('o palco ocupa a janela inteira em 1536x730, 1280x900 e 2560x1300')
+
   const vozes = chamadas.filter((c) => c.endsWith('/voz')).length
   if (vozes < 2) falhar(`esperava a voz das falas, vieram ${vozes} chamadas /voz`)
   ok(`${vozes} falas narradas pela rota /v1/ia-generativa/voz`)
