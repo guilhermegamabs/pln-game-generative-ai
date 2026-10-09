@@ -5,10 +5,9 @@ Rodar (de dentro de api/):
 Swagger: http://localhost:8000/docs
 """
 
+from config import carregar_config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from config import carregar_config
 from providers.ia_provider import ProviderIA
 from routers import ia_generativa
 

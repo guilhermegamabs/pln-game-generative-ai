@@ -5,9 +5,8 @@ import unittest
 from unittest import mock
 
 import httpx
-from fastapi.testclient import TestClient
-
 from config import Config
+from fastapi.testclient import TestClient
 from main import criar_app
 from providers.ia_provider import ErroProvedor, ProviderIA
 
@@ -76,7 +75,9 @@ class TestRotas(unittest.TestCase):
     def test_texto_repassa_pedido_ao_provider(self):
         http, provider = cliente()
         schema = {"type": "object", "properties": {"intencao": {"type": "string"}}}
-        resposta = http.post("/v1/ia-generativa/texto", json={**PEDIDO_TEXTO, "schema_resposta": schema}, headers=CABECALHO)
+        resposta = http.post(
+            "/v1/ia-generativa/texto", json={**PEDIDO_TEXTO, "schema_resposta": schema}, headers=CABECALHO
+        )
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(resposta.json()["conteudo"]["intencao"], "ameaca")
         mensagens, schema_recebido, temperatura = provider.chamadas[0]
@@ -86,7 +87,9 @@ class TestRotas(unittest.TestCase):
 
     def test_texto_valida_entrada(self):
         http, _ = cliente()
-        self.assertEqual(http.post("/v1/ia-generativa/texto", json={"mensagens": []}, headers=CABECALHO).status_code, 422)
+        self.assertEqual(
+            http.post("/v1/ia-generativa/texto", json={"mensagens": []}, headers=CABECALHO).status_code, 422
+        )
         invalida = {"mensagens": [{"role": "hacker", "content": "x"}]}
         self.assertEqual(http.post("/v1/ia-generativa/texto", json=invalida, headers=CABECALHO).status_code, 422)
 
@@ -138,7 +141,7 @@ def resposta_ollama(conteudo, codigo=200):
 
 class TestProviderOllama(unittest.TestCase):
     def setUp(self):
-        self.provider = ProviderIA(Config(api_key=CHAVE, ollama_modelo="qwen2.5:7b"))
+        self.provider = ProviderIA(Config(api_key=CHAVE, ollama_modelo="qwen2.5:7b", piper_voz=None))
 
     def test_envia_schema_e_temperatura_e_decodifica_json(self):
         schema = {"type": "object"}

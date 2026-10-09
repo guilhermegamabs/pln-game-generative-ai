@@ -7,11 +7,11 @@ então trocar o Ollama por outra API mexe só neste arquivo.
 import io
 import json
 import re
+import threading
 import time
 import wave
 
 import httpx
-
 from config import Config
 
 
@@ -27,6 +27,8 @@ class ProviderIA:
     def __init__(self, config: Config):
         self.config = config
         self._voz = None  # Piper carregado sob demanda: o modelo .onnx leva alguns segundos para abrir.
+        # Rotas síncronas rodam em threads: sem a trava, duas chamadas de voz na abertura carregariam o modelo 2 vezes.
+        self._trava_voz = threading.Lock()
 
     # ---------- texto (Ollama) ----------
 
@@ -43,7 +45,9 @@ class ProviderIA:
         try:
             resposta = httpx.post(f"{self.config.ollama_url}/api/chat", json=corpo, timeout=self.config.ollama_timeout)
         except httpx.TimeoutException as erro:
-            raise ErroProvedor(f"Ollama não respondeu em {self.config.ollama_timeout:.0f} s.", indisponivel=True) from erro
+            raise ErroProvedor(
+                f"Ollama não respondeu em {self.config.ollama_timeout:.0f} s.", indisponivel=True
+            ) from erro
         except httpx.HTTPError as erro:
             raise ErroProvedor(f"Ollama não está acessível em {self.config.ollama_url}.", indisponivel=True) from erro
         latencia_ms = round((time.perf_counter() - inicio) * 1000)
@@ -56,7 +60,10 @@ class ProviderIA:
         if resposta.status_code != 200:
             raise ErroProvedor(f"Ollama devolveu HTTP {resposta.status_code}: {resposta.text[:300]}")
 
-        conteudo = resposta.json().get("message", {}).get("content", "")
+        try:
+            conteudo = resposta.json().get("message", {}).get("content", "")
+        except ValueError as erro:
+            raise ErroProvedor(f"Ollama devolveu um corpo que não é JSON: {resposta.text[:200]}") from erro
         if schema is not None:
             try:
                 conteudo = json.loads(conteudo)
@@ -79,7 +86,7 @@ class ProviderIA:
     # ---------- voz (Piper) ----------
 
     def sintetizar_voz(self, texto, velocidade=1.0):
-        """Devolve um WAV (bytes). Gestos entre asteriscos ("*recua*") ficam fora da fala, como em geracao/gerar_vozes.py."""
+        """Devolve um WAV (bytes). Gestos entre asteriscos ("*recua*") não são falados (ver geracao/gerar_vozes.py)."""
         texto = re.sub(r"\*[^*]*\*", "", texto).strip()
         if not texto:
             raise ErroProvedor("Não sobrou texto para falar depois de remover os gestos (*...*).")
@@ -105,8 +112,12 @@ class ProviderIA:
         return True, "ok"
 
     def _carregar_voz(self):
-        if self._voz is not None:
+        with self._trava_voz:
+            if self._voz is None:
+                self._voz = self._abrir_voz()
             return self._voz
+
+    def _abrir_voz(self):
         caminho = self.config.piper_voz
         if caminho is None:
             raise ErroProvedor("PIPER_VOZ não configurado (caminho do .onnx da voz).", indisponivel=True)
@@ -116,5 +127,4 @@ class ProviderIA:
             from piper import PiperVoice
         except ImportError as erro:
             raise ErroProvedor("Pacote piper-tts não instalado (pip install piper-tts).", indisponivel=True) from erro
-        self._voz = PiperVoice.load(str(caminho))
-        return self._voz
+        return PiperVoice.load(str(caminho))

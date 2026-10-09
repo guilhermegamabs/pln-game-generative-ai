@@ -1,7 +1,8 @@
 """Rotas de IA generativa consumidas pelo jogo e pelo painel. Toda a lógica de chamada fica no provider."""
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from providers.ia_provider import ErroProvedor, ProviderIA
 from schemas import PedidoTexto, PedidoVoz, RespostaTexto, StatusIA
 from seguranca import exigir_api_key
@@ -19,6 +20,9 @@ def obter_provider(request: Request) -> ProviderIA:
     return request.app.state.provider
 
 
+Provider = Annotated[ProviderIA, Depends(obter_provider)]
+
+
 def _http(erro: ErroProvedor):
     codigo = status.HTTP_503_SERVICE_UNAVAILABLE if erro.indisponivel else status.HTTP_502_BAD_GATEWAY
     return HTTPException(codigo, str(erro))
@@ -29,7 +33,7 @@ def _http(erro: ErroProvedor):
 
 
 @router.post("/texto", response_model=RespostaTexto, responses=RESPOSTAS_ERRO, summary="Gera texto com a LLM (Ollama)")
-def gerar_texto(pedido: PedidoTexto, provider: ProviderIA = Depends(obter_provider)):
+def gerar_texto(pedido: PedidoTexto, provider: Provider):
     """Usado pelo jogo para classificar a intenção do jogador, gerar a fala do NPC e a voz do Demônio Interior."""
     try:
         return provider.gerar_texto(
@@ -45,7 +49,7 @@ def gerar_texto(pedido: PedidoTexto, provider: ProviderIA = Depends(obter_provid
     responses={**RESPOSTAS_ERRO, 200: {"content": {"audio/wav": {}}, "description": "Áudio WAV mono 16 bits"}},
     summary="Sintetiza voz com Piper TTS",
 )
-def sintetizar_voz(pedido: PedidoVoz, provider: ProviderIA = Depends(obter_provider)):
+def sintetizar_voz(pedido: PedidoVoz, provider: Provider):
     try:
         audio = provider.sintetizar_voz(pedido.texto, pedido.velocidade)
     except ErroProvedor as erro:
@@ -53,8 +57,10 @@ def sintetizar_voz(pedido: PedidoVoz, provider: ProviderIA = Depends(obter_provi
     return Response(audio, media_type="audio/wav")
 
 
-@router.get("/status", response_model=StatusIA, responses={401: RESPOSTAS_ERRO[401]}, summary="Disponibilidade de texto e voz")
-def status_ia(provider: ProviderIA = Depends(obter_provider)):
+@router.get(
+    "/status", response_model=StatusIA, responses={401: RESPOSTAS_ERRO[401]}, summary="Disponibilidade de texto e voz"
+)
+def status_ia(provider: Provider):
     """O jogo chama ao abrir: se texto=false, entra direto no modo offline em vez de falhar no primeiro turno."""
     texto_ok, texto_detalhe = provider.status_texto()
     voz_ok, voz_detalhe = provider.status_voz()

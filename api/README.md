@@ -18,7 +18,8 @@ Back-end FastAPI que encapsula a IA generativa do jogo. O jogo e o painel chamam
 | `seguranca.py` | Valida o header `X-API-Key` |
 | `schemas.py` | Modelos Pydantic de entrada e saída |
 | `config.py` | Configuração lida do ambiente (`.env`) |
-| `tests/test_api.py` | 18 testes, sem precisar de Ollama nem Piper |
+| `tests/test_api.py` | 18 testes unitários (rotas com provider falso, provider com Ollama simulado) |
+| `tests/test_integracao.py` | 20 testes pela rede de verdade: uvicorn + Ollama simulado + o jogo do protótipo jogando pela API; 5 deles usam o Piper real |
 
 ## Rotas
 
@@ -34,14 +35,29 @@ Códigos de erro: `401` chave ausente ou errada · `422` entrada inválida · `5
 
 ## Como rodar
 
+Linux / macOS:
+
 ```bash
 python -m venv .venv
-.venv/bin/pip install -r api/requirements.txt      # Windows: .venv\Scripts\pip
+.venv/bin/pip install -r api/requirements.txt
 cp api/.env.example api/.env                       # e troque API_KEY
 ollama pull qwen2.5:7b
 cd api
 ../.venv/bin/uvicorn main:app --reload --env-file .env
 ```
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\pip install -r api\requirements.txt
+Copy-Item api\.env.example api\.env              # e troque API_KEY
+ollama pull qwen2.5:7b
+cd api
+..\.venv\Scripts\uvicorn main:app --reload --env-file .env
+```
+
+O comando precisa rodar de dentro de `api/` (os imports são relativos a essa pasta).
 
 Abra http://localhost:8000/docs, clique em **Authorize** e informe a chave do `.env`.
 
@@ -59,8 +75,28 @@ curl -X POST http://localhost:8000/v1/ia-generativa/texto \
 
 ```bash
 cd api
-../.venv/bin/python -m pytest -q
+../.venv/bin/python -m pytest -q                                   # 33 passam, 5 de voz são pulados
+PIPER_VOZ=/caminho/pt_BR-faber-medium.onnx ../.venv/bin/python -m pytest -q   # 38 com o Piper real
 ```
+
+Nenhum teste precisa do Ollama: ele é simulado por um servidor HTTP local que também imita falhas (erro 500, resposta que não é JSON, lentidão além do timeout, queda no meio da partida).
+
+O que é verificado, além do caminho feliz:
+
+| Situação | Resultado esperado |
+|---|---|
+| Sem chave ou chave errada (texto, voz e status) | 401, e nada chega ao Ollama |
+| Mensagem com mais de 20 mil caracteres ou mais de 40 mensagens | 422, e nada chega ao Ollama |
+| Corpo que não é JSON | 422 |
+| Ollama com erro 500 | 502 com o detalhe do erro |
+| Ollama devolvendo HTML (proxy caído) | 502, não 500 |
+| Ollama mais lento que `OLLAMA_TIMEOUT` | 503 sem esperar a resposta |
+| Ollama cai no meio da partida | o jogo avisa e segue offline |
+| 8 chamadas simultâneas | atendidas em paralelo, não em fila |
+| Preflight CORS do front em `:5173` | liberado com o header `X-API-Key` |
+| Swagger | toda rota `/v1` exige a chave; `/health` e `/docs` não |
+| Acentos e emoji | chegam intactos ao Ollama |
+| Voz (Piper real) | WAV mono 16 bits; gestos `*...*` não são falados; velocidade 2.0 encurta o áudio; 4 sínteses simultâneas |
 
 ## Painel de teste (Streamlit)
 
@@ -71,5 +107,7 @@ cd api
 export OS7_API_KEY=sua-chave       # opcional: também dá para digitar na barra lateral
 .venv/bin/streamlit run painel/app.py
 ```
+
+Testes do painel (clicam nos botões com o `AppTest` do Streamlit): `cd painel && ../.venv/bin/python -m pytest -q` (7 testes).
 
 Abas: **Fala de NPC** (classificação + fala + voz, um turno completo do jogo), **Classificar intenção**, **Voz** e **Texto livre**. Cada resultado mostra a rota chamada, o código HTTP e a latência.

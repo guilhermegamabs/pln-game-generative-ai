@@ -10,7 +10,6 @@ import sys
 from pathlib import Path
 
 import streamlit as st
-
 from cliente_api import ClienteAPI, ErroAPI
 
 # Reaproveita os prompts e schemas reais do jogo: o painel testa exatamente o que o jogo envia.

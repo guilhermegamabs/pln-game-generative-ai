@@ -24,7 +24,9 @@ class ApiFalsa(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.headers.get("X-API-Key") != "certa":
             return self._responder(401, {"detail": "API Key ausente ou inválida."})
-        self._responder(200, {"texto": True, "voz": False, "modelo_texto": "qwen2.5:7b", "detalhe": {"texto": "ok", "voz": "-"}})
+        self._responder(
+            200, {"texto": True, "voz": False, "modelo_texto": "qwen2.5:7b", "detalhe": {"texto": "ok", "voz": "-"}}
+        )
 
     def do_POST(self):
         corpo = json.loads(self.rfile.read(int(self.headers["Content-Length"])))

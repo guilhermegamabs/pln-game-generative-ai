@@ -4,16 +4,21 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+# Limites folgados para o jogo (nos logs da CP4, a maior mensagem tem 2,7 mil caracteres e um turno
+# leva no máximo 10 mensagens: sistema + 8 de histórico + fala atual), mas que impedem mandar megabytes à LLM.
+MAX_CARACTERES_MENSAGEM = 20_000
+MAX_MENSAGENS = 40
+
 
 class Mensagem(BaseModel):
     role: Literal["system", "user", "assistant"]
-    content: str
+    content: str = Field(max_length=MAX_CARACTERES_MENSAGEM)
 
 
 class PedidoTexto(BaseModel):
     """Mesmo formato que o jogo já monta em prompts.py: lista de mensagens + JSON Schema da resposta."""
 
-    mensagens: list[Mensagem] = Field(min_length=1)
+    mensagens: list[Mensagem] = Field(min_length=1, max_length=MAX_MENSAGENS)
     schema_resposta: dict[str, Any] | None = Field(
         default=None,
         description="JSON Schema que restringe a saída do modelo. Sem ele, a resposta vem como texto livre.",

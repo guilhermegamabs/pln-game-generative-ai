@@ -1,6 +1,7 @@
 """Autenticação por API Key no header X-API-Key."""
 
 import secrets
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader
@@ -9,7 +10,7 @@ from fastapi.security import APIKeyHeader
 esquema_api_key = APIKeyHeader(name="X-API-Key", auto_error=False, description="Chave definida em API_KEY no .env")
 
 
-def exigir_api_key(request: Request, chave: str | None = Depends(esquema_api_key)):
+def exigir_api_key(request: Request, chave: Annotated[str | None, Depends(esquema_api_key)]):
     esperada = request.app.state.config.api_key
     if not esperada:
         # Sem chave configurada a API ficaria aberta: melhor recusar tudo e avisar.
