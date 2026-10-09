@@ -1,14 +1,30 @@
 // Teste de ponta a ponta: um jogador clica no jogo inteiro (menu -> partida -> Espelho -> final) num Chrome headless.
 // Tira um print de cada tela em e2e/prints/. Uso: e2e/rodar.sh (sobe API + Ollama simulado + Vite).
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import puppeteer from 'puppeteer-core'
 
 const ENDERECO = process.env.URL_JOGO ?? 'http://localhost:5174'
-const PRINTS = new URL('./prints/', import.meta.url).pathname
+// fileURLToPath: no Windows, .pathname vira "/C:/..." e o mkdir falha.
+const PRINTS = fileURLToPath(new URL('./prints/', import.meta.url))
 mkdirSync(PRINTS, { recursive: true })
 
+// Caminhos usuais do Chrome/Edge; CHROME=... sobrescreve.
+function navegadorDoSistema() {
+  const candidatos = [
+    '/usr/bin/google-chrome',
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+  ]
+  const achado = candidatos.find((c) => existsSync(c))
+  if (!achado) throw new Error('Chrome ou Edge não encontrado. Defina CHROME com o caminho do executável.')
+  return achado
+}
+
 const navegador = await puppeteer.launch({
-  executablePath: process.env.CHROME ?? '/usr/bin/google-chrome',
+  executablePath: process.env.CHROME ?? navegadorDoSistema(),
   headless: true,
   args: ['--autoplay-policy=no-user-gesture-required', '--no-first-run'],
 })

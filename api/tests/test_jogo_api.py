@@ -142,7 +142,7 @@ class TestJogoAPI(unittest.TestCase):
     def test_log_de_cada_chamada_a_ia(self):
         pid = self.nova()["id"]
         self.cmd(pid, "Calma, eu vou te ajudar")
-        registros = [json.loads(linha) for linha in (Path(self.pasta.name) / f"{pid}.jsonl").read_text().splitlines()]
+        registros = [json.loads(linha) for linha in (Path(self.pasta.name) / f"{pid}.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual(len(registros), 2)
         self.assertEqual(registros[0]["modelo"], "qwen2.5:7b")
 
