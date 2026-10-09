@@ -25,6 +25,8 @@ npm install
 npm run dev                    # http://localhost:5173
 ```
 
+No Windows (PowerShell), troque a primeira linha por `Copy-Item .env.example .env.local`; o resto é igual.
+
 ## Como jogar
 
 - Digite livremente o que quer dizer ao NPC e aperte **Enter**. A LLM classifica a intenção, o código aplica os pecados e o NPC responde (com voz).
@@ -48,6 +50,8 @@ npm run dev                    # http://localhost:5173
 Sem GPU, cada fala leva de 1 a 2 minutos com o qwen2.5:7b; o indicador "pensando" mostra os segundos. Se a IA cair, o jogo avisa e segue com falas simples (modo offline).
 
 ## Teste de ponta a ponta
+
+Requer bash (Linux, macOS ou Git Bash no Windows).
 
 ```bash
 npm run e2e

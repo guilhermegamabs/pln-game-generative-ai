@@ -1,9 +1,9 @@
-"""Gera OS_7_PECADOS_CP5.pdf: README, arquitetura e evidências, telas, diários e checklist num documento só.
+r"""Gera OS_7_PECADOS_CP5.pdf: README, arquitetura e evidências, telas, diários e checklist num documento só.
 
 Os diários e o checklist são lidos dos .md da raiz, então basta editar os .md e rodar de novo:
     .venv/bin/pip install markdown
-    .venv/bin/python relatorio/cp5/gerar_pdf.py
-Usa o Chrome/Chromium instalado para imprimir o HTML em PDF (variável CHROME para outro caminho).
+    .venv/bin/python relatorio/cp5/gerar_pdf.py        (Windows: .venv\Scripts\python relatorio\cp5\gerar_pdf.py)
+Usa o Chrome/Chromium ou o Edge instalado para imprimir o HTML em PDF (variável CHROME para outro caminho).
 """
 
 import os
@@ -223,7 +223,16 @@ jogo de terminal ─────X-API-Key──►                         └�
 def main():
     html = AQUI / "relatorio_cp5.html"
     html.write_text(montar(), encoding="utf-8")
-    chrome = os.environ.get("CHROME") or shutil.which("google-chrome") or shutil.which("chromium") or shutil.which("msedge")
+    no_windows = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    ]
+    chrome = (
+        os.environ.get("CHROME")
+        or next((shutil.which(n) for n in ("google-chrome", "chromium", "chrome", "msedge") if shutil.which(n)), None)
+        or next((c for c in no_windows if Path(c).exists()), None)
+    )
     if not chrome:
         print(f"HTML gerado em {html}; Chrome não encontrado para imprimir o PDF (defina CHROME).")
         return 1
