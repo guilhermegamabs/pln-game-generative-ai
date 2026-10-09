@@ -88,10 +88,10 @@ class TestJogoAPI(unittest.TestCase):
     def test_partida_completa_ate_o_final_de_pecado(self):
         pid = self.nova()["id"]
         self.cmd(pid, "/falar brenna")
-        r = self.cmd(pid, "/atacar")  # combate por turnos: Brenna (80 de vida) revida
+        r = self.cmd(pid, "/atacar")  # combate por turnos: Brenna (100 de vida) revida
         self.assertEqual(r["ultimo"]["combate"]["resultado"], "continua")
         self.assertEqual(r["estado"]["jogador"]["combate"]["npc"], "brenna")
-        self.assertEqual(r["estado"]["jogador"]["vida"], 84)
+        self.assertEqual(r["estado"]["jogador"]["vida"], 70)
         self.assertIn("em combate", self.cmd(pid, "Calma!")["linhas"][-1])  # sem diálogo no meio da luta
         for _ in range(3):
             r = self.cmd(pid, "/atacar")

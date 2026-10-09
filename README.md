@@ -25,6 +25,15 @@ Para jogar: Ollama rodando, `api/` no ar (`uvicorn main:app --env-file .env`) e 
 
 Testes: `api/` (pytest), `painel/` (pytest), `prototipo/` (unittest) e `jogo-web/` (`npm run e2e`, Chrome headless jogando a partida inteira).
 
+| Documento | Conteúdo |
+|---|---|
+| [`OS_7_PECADOS_CP5.pdf`](OS_7_PECADOS_CP5.pdf) | Entrega consolidada: MVP, como executar, arquitetura e evidências da API, telas, diários e checklist |
+| [`04_Diario_Vibe_Coding.md`](04_Diario_Vibe_Coding.md) | Prompts-chave reais, o que a IA gerou e o que foi ajustado |
+| [`05_Diario_de_Mudancas.md`](05_Diario_de_Mudancas.md) | Divergências em relação à CP4, com justificativa técnica |
+| [`06_Checklist_Testes.md`](06_Checklist_Testes.md) | Testes manuais (esperado e obtido) e testes automatizados |
+| [`07_Roteiro_Videos.md`](07_Roteiro_Videos.md) | Roteiro dos vídeos de PLN e de Front-end |
+| [`relatorio/cp5/`](relatorio/cp5/) | Gerador do PDF (`gerar_pdf.py`), prints e logs de evidência |
+
 ## CP4: onde está cada evidência
 
 | Pasta / arquivo | Conteúdo |

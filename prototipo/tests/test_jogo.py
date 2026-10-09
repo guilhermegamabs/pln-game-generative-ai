@@ -210,8 +210,8 @@ class TestJogo(unittest.TestCase):
         self.jogo.processar("/falar brenna")
         self.jogo.processar("/atacar")
         brenna = self.jogo.npcs["brenna"]
-        self.assertEqual(brenna.vida, 55)  # 80 - 25
-        self.assertEqual(self.jogo.jogador.vida, 84)  # revide de 16
+        self.assertEqual(brenna.vida, 75)  # 100 - 25
+        self.assertEqual(self.jogo.jogador.vida, 70)  # revide de 30
         self.assertEqual(self.jogo.jogador.combate, {"npc": "brenna", "brecha": False})
         self.assertEqual(self.jogo.jogador.pecados["ira"], 5)  # só atacar; matar vem quando ela cair
         self.assertEqual(self.jogo.ultimo["combate"]["resultado"], "continua")
@@ -220,7 +220,7 @@ class TestJogo(unittest.TestCase):
         self.assertFalse(brenna.vivo)
         self.assertIsNone(self.jogo.jogador.combate)
         self.assertEqual(self.jogo.jogador.pecados["ira"], 20)
-        self.assertEqual(self.jogo.jogador.vida, 100 - 3 * 16)  # o golpe que derruba não sofre revide
+        self.assertEqual(self.jogo.jogador.vida, 100 - 3 * 30)  # o golpe que derruba não sofre revide
         self.assertEqual(self.jogo.ultimo["combate"]["resultado"], "venceu")
         self.assertIn("Viu o inquisitor matar Capitã Brenna na praça.", self.jogo.npcs["odran"].memorias)
 
@@ -228,10 +228,10 @@ class TestJogo(unittest.TestCase):
         self.jogo.processar("/falar brenna")
         self.jogo.processar("/atacar")
         self.jogo.processar("/defender")
-        self.assertEqual(self.jogo.jogador.vida, 84 - 4)  # 16 * 1/4
+        self.assertEqual(self.jogo.jogador.vida, 70 - 8)  # 30 * 1/4, arredondado
         self.jogo.processar("/atacar")
         self.assertEqual(self.jogo.ultimo["combate"]["dano_causado"], 50)
-        self.assertEqual(self.jogo.npcs["brenna"].vida, 5)
+        self.assertEqual(self.jogo.npcs["brenna"].vida, 25)
 
     def test_em_combate_nao_da_para_conversar_nem_julgar(self):
         self.jogo.processar("/falar odran")
@@ -249,7 +249,7 @@ class TestJogo(unittest.TestCase):
         brenna = self.jogo.npcs["brenna"]
         self.assertIsNone(self.jogo.jogador.combate)
         self.assertTrue(brenna.vivo)
-        self.assertEqual(brenna.vida, 55)  # o ferimento continua
+        self.assertEqual(brenna.vida, 75)  # o ferimento continua
         self.assertIn("O inquisitor me atacou e fugiu da luta.", brenna.memorias)
 
     def test_poder_demoniaco_exige_manifestacao_e_custa_pecado(self):
@@ -261,14 +261,13 @@ class TestJogo(unittest.TestCase):
         self.jogo.jogador.manifestacoes.append("ira")
         self.jogo.processar("/poder")
         self.assertEqual(self.jogo.jogador.pecados["ira"], 58)
-        self.assertEqual(self.jogo.npcs["brenna"].vida, 10)  # 55 - 45
+        self.assertEqual(self.jogo.npcs["brenna"].vida, 30)  # 75 - 45
         self.assertEqual(self.jogo.ultimo["combate"]["poder"], "ira")
 
     def test_morrer_em_combate_e_derrota(self):
         self.jogo.processar("/falar brenna")
         self.jogo.jogador.vida = 20
-        self.jogo.processar("/atacar")
-        self.jogo.processar("/atacar")
+        self.jogo.processar("/atacar")  # revide de 30
         self.assertTrue(self.jogo.encerrado)
         self.assertEqual(self.jogo.jogador.final, "Morto em Cinzaforte")
         self.assertEqual(self.jogo.ultimo["combate"]["resultado"], "derrota")
@@ -296,7 +295,7 @@ class TestJogo(unittest.TestCase):
         self.jogo.processar("/falar brenna")
         self.jogo.processar("/atacar")
         self.jogo.processar("/item pocao")
-        self.assertEqual(self.jogo.jogador.vida, 100 - 16)  # 84 + 35 limitado a 100, depois o revide
+        self.assertEqual(self.jogo.jogador.vida, 100 - 30)  # 70 + 35 limitado a 100, depois o revide
         self.assertEqual(self.jogo.ultimo["combate"]["acao"], "item")
 
     def test_save_preserva_combate_em_andamento(self):
@@ -304,8 +303,8 @@ class TestJogo(unittest.TestCase):
         self.jogo.processar("/atacar")
         carregado = self.novo_jogo(ClienteFalso(), carregar=True)
         self.assertEqual(carregado.jogador.combate["npc"], "brenna")
-        self.assertEqual(carregado.npcs["brenna"].vida, 55)
-        self.assertEqual(carregado.jogador.vida, 84)
+        self.assertEqual(carregado.npcs["brenna"].vida, 75)
+        self.assertEqual(carregado.jogador.vida, 70)
 
     def test_save_e_load_preservam_estado(self):
         self.jogo.processar("/roubar")

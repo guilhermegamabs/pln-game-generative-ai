@@ -1,0 +1,27 @@
+INFO:     Loading environment from '.env'
+INFO:     Started server process [2594303]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:43066 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43076 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43094 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43094 - "GET /v1/ia-generativa/status HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:43094 - "GET /v1/ia-generativa/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34776 - "GET /v1/ia-generativa/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34792 - "POST /v1/ia-generativa/texto HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58110 - "POST /v1/ia-generativa/texto HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48984 - "POST /v1/ia-generativa/texto HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44120 - "OPTIONS /v1/ia-generativa/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44126 - "GET /v1/ia-generativa/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44126 - "GET /v1/ia-generativa/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44126 - "OPTIONS /v1/jogo/partidas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44120 - "POST /v1/jogo/partidas HTTP/1.1" 201 Created
+INFO:     127.0.0.1:44120 - "OPTIONS /v1/jogo/partidas/53bd26d264a34d7fb68eb8b1d9c9b1c1/comandos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44126 - "POST /v1/jogo/partidas/53bd26d264a34d7fb68eb8b1d9c9b1c1/comandos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44126 - "OPTIONS /v1/ia-generativa/voz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54978 - "POST /v1/ia-generativa/voz HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2594303]

@@ -28,8 +28,8 @@
       "reage_bem_a": ["violencia", "ameaca"],
       "relacao": 0,
       "ouro": 40,
-      "vida_max": 80,
-      "dano": 16
+      "vida_max": 100,
+      "dano": 30
     },
     {
       "id": "odran",
@@ -42,7 +42,7 @@
       "relacao": 0,
       "ouro": 120,
       "vida_max": 40,
-      "dano": 8
+      "dano": 10
     }
   ],
   "manifestacoes": {

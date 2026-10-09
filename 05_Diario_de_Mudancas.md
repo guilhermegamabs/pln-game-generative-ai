@@ -1,0 +1,46 @@
+# Etapa 4 (CP5): Diário de Mudanças em relação à CP4
+
+> Rascunho baseado no relatório da CP4 (`OS_7_PECADOS_CP4.pdf`) e no que foi implementado na branch `feat/cp5-api-fastapi`. Os itens marcados com *[Grupo: confirmar]* são decisões de escopo que o grupo precisa validar antes da entrega.
+
+## 1. O que se manteve igual à CP4
+
+- **Título, gênero e premissa:** OS 7 PECADOS, RPG narrativo de fantasia sombria. O inquisitor corrompido pelos pecados que investiga.
+- **Região e cena:** Cinzaforte, na Praça do Pelourinho, com o julgamento de Tomás.
+- **Pecados ativos e manifestações:** Ira e Avareza, com A Fera e O Mercador. A CP4 previa "2 ou 3" manifestações.
+- **Telas do mockup:** Menu principal, Gameplay e Espelho da Alma. As três foram implementadas a partir do CSS do `mockup/mockup.html`, no mesmo palco de 1920x1080.
+- **Mecânicas M1 a M4:**
+  - **M1. Diálogo livre:** a intenção é classificada pela LLM em uma chamada e a fala do NPC é gerada em outra.
+  - **M2. Sete medidores:** os pontos vêm de regras fixas no código.
+  - **M3. Demônio Interior:** desperta quando um pecado chega a 40 e sussurra com uma fala gerada pela LLM.
+  - **M4. Memória e reputação:** inclui testemunhas, segredo liberado só com confiança e aparência.
+  - **M5. Combate por turnos simples**, com as quatro ações da CP4:
+    - atacar;
+    - defender (recebe 1/4 do dano e abre uma brecha para o golpe seguinte sair em dobro);
+    - usar item (poção de cura e água benta, num inventário);
+    - usar o poder demoníaco, que só existe com uma manifestação desperta, causa mais dano e aumenta o pecado dela, como na M3 da CP4.
+
+    O revide de cada NPC vem da ficha dele, e os valores de dano ficam fixos no código, como a corrupção.
+- **HUD do mockup:** barra de vida, "Vida X / 100", moedas e marcas de corrupção, na mesma posição do mockup da tela de gameplay.
+- **Modelos de IA:**
+  - qwen2.5:7b via Ollama para texto em tempo real;
+  - Piper `pt_BR-faber-medium` para voz;
+  - SDXL 1.0 para as imagens já geradas na CP4.
+- **Stack:** React, TypeScript e Vite no front e Python com FastAPI no back, como previa a seção 4 da CP4 ("MVP (CP5): back-end" e "MVP (CP5): front-end").
+- **Final Consumido:** um pecado chegar a 100 encerra a partida, como na CP4.
+
+## 2. Tabela de mudanças
+
+| Item alterado | O que estava na CP4 | O que foi implementado | Justificativa técnica |
+|---|---|---|---|
+| Número de NPCs | Escopo do MVP: "NPCs: de 5 a 8, todos com memória" | 3 NPCs com memória: Tomás, Capitã Brenna e Odran | Cada NPC depende de três coisas: uma ficha validada nos ciclos de prompt v1 a v6 da CP4, um retrato SDXL e a voz. O SDXL precisa da GPU da máquina de produção da CP4 (8 GB de VRAM); o notebook usado na CP5 não tem GPU. Os 3 NPCs da cena já testada cobrem os dois pecados ativos (Brenna é Ira e Odran é Avareza) e o papel de testemunha. **Impacto:** a cena é curta, mas todas as mecânicas aparecem nela. Novos NPCs entram só como novos registros em `prototipo/dados/mundo.json`, sem mudar código. *[Grupo: confirmar.]* |
+| Resolução da região | "Resolver a manifestação local" por combate, negociação ou sacrifício; Redenção avaliada "no confronto final"; combate também contra "criaturas e manifestações" | Nova ação **Veredito**: o inquisitor absolve ou condena Tomás. Se Tomás estiver morto, o veredito encerra sem decisão. O final é calculado pelos medidores no momento do veredito | O protótipo da CP4 só tinha o final Consumido, mas a CP4 exigia "pelo menos 2 finais" no MVP. Sem um confronto com a manifestação, faltava um momento para avaliar a Redenção. O julgamento de Tomás é o conflito central da cena descrita na CP4, então virou o fim de sessão. O combate por turnos existe, mas só contra os NPCs da praça: lutar contra uma manifestação exigiria uma criatura com ficha e arte próprias, e a manifestação no MVP é uma voz interior, não um corpo na cena. **Impacto:** é uma mecânica nova, mas usa só regras fixas no código (nenhuma chamada à IA). Está coberta por 4 testes em `prototipo/tests/test_jogo.py`. |
+| Finais | MVP com pelo menos 2 finais (Redenção vs. Consumido pela Ira/Avareza); na campanha, finais de pecado e "O Oitavo Pecado" | 4 finais: **Redenção** (todos os pecados abaixo de 40), **Marcado pela Ira/Avareza** (final de pecado, pelo pecado dominante), **Consumido** (um pecado em 100) e a derrota em combate **Morto em Cinzaforte** (vida zerada). "O Oitavo Pecado" não foi implementado | Supera o mínimo da CP4. O Oitavo Pecado depende de vários pecados altos ao mesmo tempo, e no MVP só 2 dos 7 estão ativos. **Impacto:** nenhum negativo. |
+| Latência em tempo real | Medido na CP4: cerca de 5,5 s por turno (qwen2.5:7b, RTX 5060 Ti) | 68 a 145 s por turno no notebook de desenvolvimento, que roda tudo em CPU | O notebook usado para desenvolver e testar a CP5 não tem GPU e tem 14 GB de RAM. Foi tentado o llama3.2:3b, a alternativa leve documentada na CP4: ele levou cerca de 30 s por turno, contra cerca de 1 min do 7B, mas **devolveu a memória do NPC vazia nos dois turnos testados**, o que quebra a M4. Por isso o 7B foi mantido. **Impacto:** o jogo é o mesmo, mas a fluidez depende do hardware. *[Grupo: indicar em qual máquina o vídeo foi gravado. Na máquina com GPU da CP4, a latência volta à medida da CP4.]* |
+| Streaming da fala | Mitigação de latência prevista: "streaming da fala (texto aparece enquanto é gerado)" | Indicador "pensando" com contador de segundos. A fala aparece inteira | A fala do NPC vem dentro de um JSON restrito por schema (`format` do Ollama), junto com emoção e memória. Mostrar o texto aos poucos exigiria um parser de JSON incompleto, além de streaming da API até o navegador. O turno também depende da classificação, que vem antes, e das regras aplicadas depois. **Impacto:** a espera é visível, mas o jogador vê o tempo passando. |
+| Classificador em modelo menor | Mitigação prevista: "classificador no modelo de 3B" | Classificação e fala no qwen2.5:7b | Dois modelos carregados ao mesmo tempo apertam a RAM da máquina de desenvolvimento: com o 7B carregado, restavam cerca de 7,7 GB livres. Revezar os modelos traria de volta a carga de 24 a 67 s medida na CP4. No teste desta máquina, o 3B leu "Solte esse homem ou eu arranco sua cabeça!" como violência, e o 7B como ameaça, o que é mais preciso. **Impacto:** turnos mais lentos em CPU, mas a classificação fica no modelo validado. |
+| Vozes dos personagens | Vozes pré-geradas por personagem, com efeitos (velocidade, altura, cadeia de efeitos da Fera com voz dupla e reverb); voz feminina para Brenna planejada com Coqui XTTS-v2 | A narração de abertura usa o WAV pré-gerado da CP4. **As falas geradas ao vivo são sintetizadas em tempo real** pela API (`POST /v1/ia-generativa/voz`), com a voz faber sem efeitos, igual para todos os personagens. Não há voz feminina | As falas do MVP mudam a cada partida, então não podem ser pré-geradas. A cadeia de efeitos da CP4 (`geracao/gerar_vozes.py`) foi feita para produção offline, e o XTTS-v2 não foi testado no prazo. **Impacto:** a voz agora acompanha o texto gerado pela LLM (duas modalidades de IA em tempo real), mas com menos caracterização. A Brenna fala com voz masculina. |
+| Contestar a intenção lida | Mitigação prevista: exibir a intenção lida "e permitir contestar ou desfazer" | A intenção lida é exibida (painel "Intenção lida", com intensidade e efeito nos medidores), mas não pode ser contestada | Desfazer exigiria guardar e reverter o estado do turno (pecados, relação, memória e histórico do NPC). Isso ficou fora do prazo. **Impacto:** a classificação errada continua visível para o jogador, o que já era a primeira parte da mitigação. |
+| Fatos permitidos por NPC e filtro de saída | Planejados contra alucinação e conteúdo impróprio | Não implementados. Continuam os limites no prompt de sistema e a regra do segredo, que só entra no prompt com relação 40 ou mais | Fora do prazo. **Impacto:** os riscos descritos na CP4 continuam. |
+| Modo offline (fallback) | Não previsto na CP4 para o jogo final (o protótipo tinha `--offline` só como modo de teste) | Se a API ou o Ollama ficar indisponível (HTTP 503), o jogo avisa e continua com falas simples por palavra-chave. As regras de pecado seguem iguais | É um acréscimo, não uma remoção. Foi testado derrubando o Ollama no meio de uma partida real. Limitação: depois de cair para o offline, a partida segue offline até ser recarregada. |
+| Arquitetura de chamada à IA | Protótipo da CP4 chamava o Ollama direto (`prototipo/llm.py`) | O jogo chama a API do grupo (FastAPI, `X-API-Key`), e só a API chama o Ollama e o Piper. O modo antigo continua com `--direto` | Exigência da disciplina de Front-end da CP5, prevista na seção 4 da CP4 ("Python com API HTTP local (FastAPI)"). Também foi acrescentado um painel Streamlit de testes (`painel/`). **Impacto:** mais um processo para subir antes de jogar (API), documentado no README. |
+| Persistência | Save em JSON e log em JSONL, locais ao protótipo | Mesmo formato, mas guardado pela API, um arquivo por partida (`api/partidas/{id}.json` e `.jsonl`). O navegador guarda só o id da partida para o "Continuar" | O jogo agora roda no navegador, e o estado e as regras ficam no servidor (decisão da CP4 contra prompt injection). **Impacto:** a partida sobrevive a reinício da API. |
