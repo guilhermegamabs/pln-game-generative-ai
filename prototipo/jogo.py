@@ -37,6 +37,12 @@ MAX_HISTORICO = 8
 MAX_MEMORIAS = 12
 VALOR_ROUBO = 25
 
+
+def _limpar(texto):
+    # Com JSON Schema no Ollama, o qwen2.5:7b às vezes devolve espaços duplos entre todas as palavras
+    # (visto na fala da Fera em teste real). Junta qualquer sequência de espaços/quebras em um espaço só.
+    return " ".join(str(texto or "").split())
+
 AJUDA = """Digite livremente o que quer dizer ao NPC atual. Comandos:
   /falar [nome] [fala]   escolhe com quem falar e, opcionalmente, já diz algo
                          (sem nome, lista os presentes; ex.: /falar brenna Solte esse homem)
@@ -119,8 +125,8 @@ class Jogo:
         )
         if resposta is None:
             return
-        fala = str(resposta.get("fala", "")).strip() or "*fica em silêncio*"
-        memoria = str(resposta.get("memoria", "")).strip()
+        fala = _limpar(resposta.get("fala")) or "*fica em silêncio*"
+        memoria = _limpar(resposta.get("memoria"))
 
         npc.registrar_fala(texto, fala, MAX_HISTORICO)
         self.saida(f"\n{npc.nome}: {fala}")
@@ -278,7 +284,7 @@ class Jogo:
         resposta = self._gerar(
             prompts.mensagens_manifestacao(manifestacao, pecado, self.jogador, gatilho), SCHEMA_FALA
         )
-        fala = (resposta or {}).get("fala") or manifestacao["fala_reserva"]
+        fala = _limpar((resposta or {}).get("fala")) or manifestacao["fala_reserva"]
         self.saida(f"\n*** {manifestacao['nome']} desperta dentro de você ***\n{manifestacao['nome']}: {fala}")
 
     def _final_consumido(self, pecado):

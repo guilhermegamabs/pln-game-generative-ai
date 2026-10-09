@@ -77,6 +77,18 @@ class TestJogo(unittest.TestCase):
         jogo.processar("oi")
         self.assertIn(segredo, cliente.mensagens[0]["content"])
 
+    def test_espacos_duplos_do_modelo_sao_limpos(self):
+        # Saída real do qwen2.5:7b na fala da Fera: espaço duplo entre todas as palavras.
+        fala = "Tu  ousou  te  atrever  contra  mim?\n  A  escolha  é  tua."
+        resposta = {"intencao": "violencia", "intensidade": 3, "emocao": "raiva", "fala": fala, "memoria": "Ele  me  ameaçou. "}
+        jogo = self.novo_jogo(ClienteFixo(resposta))
+        jogo.jogador.pecados["ira"] = 39
+        jogo.processar("Eu vou te matar")
+        self.assertIn("\nTomás: Tu ousou te atrever contra mim? A escolha é tua.", self.linhas)
+        self.assertTrue(any(linha.endswith("A Fera: Tu ousou te atrever contra mim? A escolha é tua.") for linha in self.linhas))
+        self.assertEqual(jogo.npcs["tomas"].memorias, ["Ele me ameaçou."])
+        self.assertEqual(jogo.npcs["tomas"].historico[-1]["content"], "Tu ousou te atrever contra mim? A escolha é tua.")
+
     def setUp(self):
         self.pasta = tempfile.TemporaryDirectory()
         self.save = Path(self.pasta.name) / "partida.json"
