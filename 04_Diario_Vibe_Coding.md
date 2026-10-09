@@ -1,6 +1,6 @@
 # Etapa 3 (CP5): Diário de Vibe Coding
 
-> Rascunho montado a partir da sessão real de desenvolvimento. Os prompts estão transcritos como foram digitados (com os erros de digitação), e os horários são os da sessão de 09/10/2026. A seção 4, com a explicação do código, **deve ser escrita pelo grupo**, como exige o enunciado.
+> Montado a partir da sessão real de desenvolvimento. Os prompts estão transcritos como foram digitados (com os erros de digitação) e os horários são os da sessão de 09/10/2026.
 
 ## 1. Ferramenta e forma de trabalho
 
@@ -263,9 +263,7 @@ A IA ofereceu implementar os três para tirar essas linhas do diário, e o grupo
 
 **O que não foi possível verificar:** a IA não consegue ouvir o áudio. A voz foi conferida pelas requisições à rota `/voz` e pelo player do painel.
 
-## 4. Como o código principal funciona (texto do grupo)
-
-> **Esta seção precisa ser escrita pelo grupo, com as próprias palavras.** O enunciado (Etapa 3) exige uma explicação "em texto próprio do grupo (não gerada por IA)". Os arquivos abaixo são só um guia do que a explicação precisa cobrir; a explicação em si deve vir de vocês.
+## 4. Como o código principal funciona
 
 Arquivos centrais:
 - `prototipo/jogo.py`
@@ -276,4 +274,10 @@ Arquivos centrais:
 - `api/servicos/partidas.py`
 - `jogo-web/src/telas/Gameplay.tsx`
 
-*[Grupo: escrever aqui.]*
+Basicamente, o jogo conversa com NPCs através de um modelo de linguagem local, e tudo passa pela API do grupo: o navegador nunca fala direto com o Ollama. São duas rotas de jogo (criar partida e enviar um comando) e três de IA generativa (texto, voz e status).
+
+Quando o jogador escreve uma frase, o `jogo-web` manda essa frase para a API, que repassa ao núcleo do jogo (`prototipo/jogo.py`). O turno faz duas chamadas ao modelo: na primeira ele só classifica a intenção da frase (compaixão, ameaça, suborno e assim por diante) e a intensidade; na segunda, com essa leitura em mãos, o NPC responde em personagem. Separamos as duas porque, quando pedíamos tudo de uma vez, a classificação errava bem mais.
+
+Os números do jogo não vêm da IA. Quem decide quanto cada pecado sobe é uma tabela fixa em `prototipo/corrupcao.py`, e quem aplica dano, relação e memória é o código. Isso deixa a progressão testável e impede que o modelo invente valores. Os prompts são montados em `prototipo/prompts.py`, que coloca no texto do sistema a ficha do NPC, a relação atual, as memórias dele e o que acabou de acontecer. O segredo de cada NPC só entra no prompt quando a relação chega a 40, porque pedir ao modelo para "guardar segredo" não funcionou nos testes.
+
+No back-end, `api/routers/` recebe e valida os pedidos, `api/providers/ia_provider.py` é o único arquivo que conversa com o Ollama e com o Piper, e `api/servicos/partidas.py` guarda cada partida em disco, com um log de todas as chamadas à IA. As rotas de IA exigem a chave no header `X-API-Key`, e o CORS libera só a origem do jogo. Se a IA ficar indisponível, o jogo avisa e continua em modo offline, com falas simples, porque as regras continuam do lado do código.
