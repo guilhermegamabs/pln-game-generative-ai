@@ -64,3 +64,21 @@ class StatusIA(BaseModel):
     voz: bool
     modelo_texto: str
     detalhe: dict[str, str]
+
+
+class PedidoComando(BaseModel):
+    entrada: str = Field(
+        min_length=1,
+        max_length=500,
+        description='Fala livre ("Solte esse homem!") ou comando ("/atacar", "/doar 10", "/veredito absolver")',
+    )
+
+
+class RespostaJogo(BaseModel):
+    id: str
+    linhas: list[str] = Field(description="Texto que o terminal mostraria (narração, avisos)")
+    ultimo: dict[str, Any] = Field(
+        description="Resultado estruturado do comando: fala, leitura, memoria, pecados, manifestacao, final"
+    )
+    estado: dict[str, Any] = Field(description="Jogador, NPCs, cena e limiares depois do comando")
+    offline: bool = Field(description="true se a IA caiu e a partida segue com falas simples por palavra-chave")

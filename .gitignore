@@ -15,3 +15,4 @@ MEMORIA.md
 # Ambiente e segredos da API (CP5)
 .venv/
 api/.env
+api/partidas/

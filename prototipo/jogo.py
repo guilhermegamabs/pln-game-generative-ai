@@ -51,6 +51,7 @@ AJUDA = """Digite livremente o que quer dizer ao NPC atual. Comandos:
   /doar <valor>   dá moedas ao NPC atual
   /status         medidores de pecado, aparência, manifestações
   /memorias       o que o NPC atual lembra de você
+  /veredito absolver|condenar   julga Tomás e encerra a partida (o final depende dos seus pecados)
   /ajuda          esta ajuda
   /sair           salva e sai"""
 
@@ -70,6 +71,9 @@ class Jogo:
             self.jogador = Jogador()
             self.npcs = {ficha["id"]: NPC(**ficha) for ficha in mundo["npcs"]}
         self.atual = self.cena["npc_inicial"]
+        # Resultado estruturado do último comando (fala, intenção lida, memória, manifestação, final).
+        # O terminal usa só as linhas de texto; a interface web (CP5) monta os painéis a partir disto.
+        self.ultimo = {}
 
     # ---------- entrada ----------
 
@@ -91,6 +95,7 @@ class Jogo:
         entrada = entrada.strip()
         if not entrada or self.encerrado:
             return not self.encerrado
+        self.ultimo = {}
         if entrada.startswith("/"):
             comando, _, argumento = entrada[1:].partition(" ")
             metodo = getattr(self, f"cmd_{comando.lower()}", None)
@@ -127,6 +132,7 @@ class Jogo:
             return
         fala = _limpar(resposta.get("fala")) or "*fica em silêncio*"
         memoria = _limpar(resposta.get("memoria"))
+        emocao = _limpar(resposta.get("emocao"))
 
         npc.registrar_fala(texto, fala, MAX_HISTORICO)
         self.saida(f"\n{npc.nome}: {fala}")
@@ -135,6 +141,14 @@ class Jogo:
         npc.ajustar_relacao(delta_rel)
         if memoria:
             npc.lembrar(memoria, MAX_MEMORIAS)
+            self.ultimo["memoria"] = {"npc": npc.id, "texto": memoria}
+        self.ultimo["fala"] = {"npc": npc.id, "texto": fala, "emocao": emocao}
+        self.ultimo["leitura"] = {
+            "npc": npc.id,
+            "intencao": intencao,
+            "intensidade": intensidade,
+            "delta_relacao": delta_rel,
+        }
 
         self._consequencias(
             corrupcao.deltas_intencao(intencao, intensidade),
@@ -249,6 +263,35 @@ class Jogo:
         for memoria in npc.memorias or ["(nenhuma lembrança)"]:
             self.saida(f"  - {memoria}")
 
+    def cmd_veredito(self, decisao):
+        decisao = _sem_acento(decisao.strip())
+        acusado = self.npcs[self.cena.get("acusado", "tomas")]
+        if acusado.vivo and decisao not in ("absolver", "condenar"):
+            self.saida(f"Uso: /veredito absolver  ou  /veredito condenar  (julga {acusado.nome} e encerra a partida)")
+            return
+        pecado, valor = max(self.jogador.pecados.items(), key=lambda item: item[1])
+        if not acusado.vivo:
+            julgamento = f"Com {acusado.nome} morto, não resta ninguém a julgar. A praça só espera para ver quem você se tornou."
+        elif decisao == "absolver":
+            julgamento = f"Você ergue a mão e declara {acusado.nome} livre. A multidão hesita, mas abre caminho."
+        else:
+            julgamento = f"Você declara {acusado.nome} culpado. A multidão urra, e a corda é preparada no pelourinho."
+        if valor < corrupcao.LIMIAR_MANIFESTACAO:
+            titulo = "Redenção"
+            desfecho = (
+                "Nenhum pecado tomou forma dentro de você. Pela primeira vez em anos, Cinzaforte vê um julgamento "
+                "sem ódio nem ouro por trás, e a manifestação da Ira perde força sobre a cidade."
+            )
+        else:
+            nome = self.manifestacoes[pecado]["nome"]
+            titulo = f"Marcado pela {NOMES[pecado]}"
+            desfecho = (
+                f"O veredito sai da sua boca, mas a voz não é só sua: {nome} fala junto. Cinzaforte ganha um juiz, "
+                f"e a {NOMES[pecado]} ganha um servo. O caso está encerrado; você, não."
+            )
+        self.jogador.eventos.append(f"Veredito: {decisao or 'sem julgamento'} ({acusado.nome}).")
+        self._encerrar(titulo, f"{julgamento} {desfecho}")
+
     def cmd_sair(self, _):
         self._salvar()
         self.saida("Partida salva. Até a próxima, inquisitor.")
@@ -265,6 +308,7 @@ class Jogo:
 
     def _consequencias(self, deltas, gatilho, detalhe):
         aplicados, novas = corrupcao.aplicar(self.jogador.pecados, deltas, self.jogador.manifestacoes)
+        self.ultimo["pecados"] = {p: v for p, v in aplicados.items() if v}
         partes = [detalhe] + [f"{NOMES[p]} {v:+d}" for p, v in aplicados.items() if v]
         self.saida(f"  [{' · '.join(partes)}]")
 
@@ -285,17 +329,23 @@ class Jogo:
             prompts.mensagens_manifestacao(manifestacao, pecado, self.jogador, gatilho), SCHEMA_FALA
         )
         fala = _limpar((resposta or {}).get("fala")) or manifestacao["fala_reserva"]
+        self.ultimo["manifestacao"] = {"pecado": pecado, "nome": manifestacao["nome"], "fala": fala}
         self.saida(f"\n*** {manifestacao['nome']} desperta dentro de você ***\n{manifestacao['nome']}: {fala}")
 
     def _final_consumido(self, pecado):
         nome = self.manifestacoes[pecado]["nome"]
-        self.jogador.final = f"Consumido pela {NOMES[pecado]}"
-        self.saida(
-            f"\n=== FINAL: CONSUMIDO PELA {NOMES[pecado].upper()} ===\n"
+        self._encerrar(
+            f"Consumido pela {NOMES[pecado]}",
             f"{nome} toma o controle. O inquisitor que chegou a Cinzaforte não existe mais — "
-            f"agora a cidade tem uma nova manifestação."
+            f"agora a cidade tem uma nova manifestação.",
         )
+
+    def _encerrar(self, titulo, texto):
+        self.jogador.final = titulo
+        self.ultimo["final"] = {"titulo": titulo, "texto": texto}
+        self.saida(f"\n=== FINAL: {titulo.upper()} ===\n{texto}")
         self.encerrado = True
+        self._salvar()
 
     def _gerar(self, mensagens, schema, temperatura=None):
         erro = None
@@ -310,6 +360,43 @@ class Jogo:
     def _salvar(self):
         if self.caminho_save:
             salvar_partida(self.caminho_save, self.jogador, self.npcs)
+
+    def estado(self):
+        """Fotografia do jogo para a interface web: jogador, NPCs, cena e limiares."""
+        return {
+            "cena": self.cena,
+            "atual": self.atual,
+            "encerrado": self.encerrado,
+            "jogador": {
+                "nome": self.jogador.nome,
+                "ouro": self.jogador.ouro,
+                "pecados": dict(self.jogador.pecados),
+                "manifestacoes": list(self.jogador.manifestacoes),
+                "eventos": list(self.jogador.eventos),
+                "final": self.jogador.final,
+                "aparencia": corrupcao.aparencia(self.jogador.pecados),
+            },
+            "npcs": [
+                {
+                    "id": npc.id,
+                    "nome": npc.nome,
+                    "descricao": npc.descricao,
+                    "relacao": npc.relacao,
+                    "rotulo_relacao": rotulo_relacao(npc.relacao),
+                    "vivo": npc.vivo,
+                    "ouro": npc.ouro,
+                    "memorias": list(npc.memorias),
+                }
+                for npc in self.npcs.values()
+            ],
+            "manifestacoes": {
+                pecado: {"nome": m["nome"], "poder": m["poder"]} for pecado, m in self.manifestacoes.items()
+            },
+            "limiares": {
+                "manifestacao": corrupcao.LIMIAR_MANIFESTACAO,
+                "consumido": corrupcao.LIMITE_CONSUMIDO,
+            },
+        }
 
     def hud(self):
         visiveis = [p for p in PECADOS if p in ("ira", "avareza") or self.jogador.pecados[p] > 0]

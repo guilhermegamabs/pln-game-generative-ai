@@ -19,6 +19,10 @@ class Config:
     piper_voz: Path | None = field(
         default_factory=lambda: Path(os.environ["PIPER_VOZ"]) if os.environ.get("PIPER_VOZ") else None
     )
+    # Saves e logs das partidas do jogo web (um .json e um .jsonl por partida).
+    pasta_partidas: Path = field(
+        default_factory=lambda: Path(os.environ.get("PASTA_PARTIDAS", Path(__file__).resolve().parent / "partidas"))
+    )
     # Origem do front React em dev (Vite) por padrão; em produção, listar o domínio do jogo.
     cors_origens: list[str] = field(
         default_factory=lambda: _lista(os.environ.get("CORS_ORIGENS", "http://localhost:5173,http://127.0.0.1:5173"))

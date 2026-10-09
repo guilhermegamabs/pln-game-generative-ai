@@ -89,6 +89,71 @@ class TestJogo(unittest.TestCase):
         self.assertEqual(jogo.npcs["tomas"].memorias, ["Ele me ameaçou."])
         self.assertEqual(jogo.npcs["tomas"].historico[-1]["content"], "Tu ousou te atrever contra mim? A escolha é tua.")
 
+    def test_veredito_sem_pecado_alto_e_redencao(self):
+        self.jogo.processar("/veredito absolver")
+        self.assertTrue(self.jogo.encerrado)
+        self.assertEqual(self.jogo.jogador.final, "Redenção")
+        self.assertEqual(self.jogo.ultimo["final"]["titulo"], "Redenção")
+        self.assertIn("declara Tomás livre", self.jogo.ultimo["final"]["texto"])
+
+    def test_veredito_com_pecado_manifestado_e_final_de_pecado(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/falar odran")
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/falar tomas")
+        self.jogo.processar("/veredito condenar")
+        self.assertEqual(self.jogo.jogador.final, "Marcado pela Ira")
+        self.assertIn("A Fera fala junto", self.jogo.ultimo["final"]["texto"])
+
+    def test_veredito_exige_decisao_e_nao_encerra_sem_ela(self):
+        self.jogo.processar("/veredito talvez")
+        self.assertFalse(self.jogo.encerrado)
+        self.assertIn("Uso: /veredito", self.linhas[-1])
+
+    def test_veredito_com_acusado_morto_aceita_sem_decisao(self):
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/veredito")
+        self.assertTrue(self.jogo.encerrado)
+        self.assertIn("não resta ninguém a julgar", self.jogo.ultimo["final"]["texto"])
+
+    def test_partida_encerrada_nao_aceita_mais_comandos(self):
+        self.jogo.processar("/veredito absolver")
+        ouro = self.jogo.jogador.ouro
+        self.jogo.processar("/doar 5")
+        self.assertEqual(self.jogo.jogador.ouro, ouro)
+
+    def test_resultado_estruturado_do_turno(self):
+        self.jogo.processar("Solta ele ou eu te mato")
+        ultimo = self.jogo.ultimo
+        self.assertEqual(ultimo["fala"]["npc"], "tomas")
+        self.assertEqual(ultimo["leitura"]["intencao"], "violencia")
+        self.assertEqual(ultimo["pecados"], {"ira": 12})
+        self.assertIn("memoria", ultimo)
+        self.jogo.processar("/status")
+        self.assertEqual(self.jogo.ultimo, {})  # cada comando começa limpo
+
+    def test_resultado_registra_manifestacao_e_consumido(self):
+        self.jogo.jogador.pecados["ira"] = 35
+        self.jogo.processar("/atacar")  # 35 -> 55: cruza o limiar de 40
+        self.assertEqual(self.jogo.ultimo["manifestacao"]["nome"], "A Fera")
+        self.assertNotIn("final", self.jogo.ultimo)
+        self.jogo.processar("/falar brenna")
+        self.jogo.jogador.pecados["ira"] = 85
+        self.jogo.processar("/atacar")  # 85 -> 100
+        self.assertNotIn("manifestacao", self.jogo.ultimo)  # A Fera já tinha despertado
+        self.assertEqual(self.jogo.ultimo["final"]["titulo"], "Consumido pela Ira")
+
+    def test_estado_para_a_interface(self):
+        self.jogo.processar("/atacar")
+        estado = self.jogo.estado()
+        self.assertEqual(estado["atual"], "tomas")
+        self.assertEqual(estado["jogador"]["pecados"]["ira"], 20)
+        tomas = next(n for n in estado["npcs"] if n["id"] == "tomas")
+        self.assertFalse(tomas["vivo"])
+        self.assertEqual(estado["manifestacoes"]["ira"]["nome"], "A Fera")
+        self.assertEqual(estado["limiares"], {"manifestacao": 40, "consumido": 100})
+
     def setUp(self):
         self.pasta = tempfile.TemporaryDirectory()
         self.save = Path(self.pasta.name) / "partida.json"

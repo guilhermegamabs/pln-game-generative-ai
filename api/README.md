@@ -1,6 +1,6 @@
 # API de IA generativa · OS 7 PECADOS (CP5)
 
-Back-end FastAPI que encapsula a IA generativa do jogo. O jogo e o painel chamam **esta API**; só ela fala com o Ollama (texto) e com o Piper (voz).
+Back-end FastAPI que encapsula a IA generativa do jogo e roda as partidas do jogo web. O jogo e o painel chamam **esta API**; só ela fala com o Ollama (texto) e com o Piper (voz).
 
 ```
  jogo / painel ──HTTP + X-API-Key──► routers/ia_generativa.py ──► providers/ia_provider.py ──► Ollama (texto)
@@ -14,11 +14,14 @@ Back-end FastAPI que encapsula a IA generativa do jogo. O jogo e o painel chamam
 |---|---|
 | `main.py` | Cria o app, CORS, registra o router, `/health` |
 | `routers/ia_generativa.py` | Rotas `/v1/ia-generativa/*`, protegidas por API Key |
+| `routers/jogo.py` | Rotas `/v1/jogo/*` usadas pelo jogo web (`jogo-web/`) |
+| `servicos/partidas.py` | Partidas em andamento: roda o núcleo do jogo (`prototipo/`) e pede texto à IA pelo provider |
 | `providers/ia_provider.py` | Chamada ao Ollama (`/api/chat` com JSON Schema) e síntese com Piper |
 | `seguranca.py` | Valida o header `X-API-Key` |
 | `schemas.py` | Modelos Pydantic de entrada e saída |
 | `config.py` | Configuração lida do ambiente (`.env`) |
 | `tests/test_api.py` | 18 testes unitários (rotas com provider falso, provider com Ollama simulado) |
+| `tests/test_jogo_api.py` | 10 testes das rotas do jogo: partida até os dois finais, fallback, "Continuar" depois de reiniciar, id malicioso |
 | `tests/test_integracao.py` | 20 testes pela rede de verdade: uvicorn + Ollama simulado + o jogo do protótipo jogando pela API; 5 deles usam o Piper real |
 
 ## Rotas
@@ -28,10 +31,13 @@ Back-end FastAPI que encapsula a IA generativa do jogo. O jogo e o painel chamam
 | `POST` | `/v1/ia-generativa/texto` | X-API-Key | Recebe `mensagens` + `schema_resposta` (opcional) + `temperatura`, devolve `conteudo`, `modelo`, `latencia_ms` |
 | `POST` | `/v1/ia-generativa/voz` | X-API-Key | Recebe `texto` + `velocidade`, devolve `audio/wav`. Gestos entre `*asteriscos*` não são falados |
 | `GET` | `/v1/ia-generativa/status` | X-API-Key | Diz se texto e voz estão disponíveis (o jogo usa para decidir o modo offline) |
+| `POST` | `/v1/jogo/partidas` | X-API-Key | Cria uma partida e devolve a introdução e o estado |
+| `GET` | `/v1/jogo/partidas/{id}` | X-API-Key | Estado da partida (o "Continuar" do menu; volta do save mesmo depois de reiniciar a API) |
+| `POST` | `/v1/jogo/partidas/{id}/comandos` | X-API-Key | Fala livre ou ação (`/atacar`, `/roubar`, `/doar 10`, `/falar brenna`, `/veredito absolver`); devolve fala, intenção lida, memória, pecados, manifestação, final e o estado |
 | `GET` | `/health` | não | A API está no ar |
 | `GET` | `/docs` | não | Swagger |
 
-Códigos de erro: `401` chave ausente ou errada · `422` entrada inválida · `502` a IA respondeu com erro ou JSON inválido · `503` a IA está fora do ar (o jogo deve cair no fallback).
+Códigos de erro: `401` chave ausente ou errada · `404` partida não encontrada · `409` partida já terminou · `422` entrada inválida · `502` a IA respondeu com erro ou JSON inválido · `503` a IA está fora do ar (o jogo deve cair no fallback).
 
 ## Como rodar
 

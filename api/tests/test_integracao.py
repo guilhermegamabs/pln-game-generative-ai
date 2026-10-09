@@ -78,11 +78,17 @@ class OllamaSimulado(BaseHTTPRequestHandler):
         pass
 
 
+class ServidorOllama(ThreadingHTTPServer):
+    # O padrão do Python é 5 conexões na fila: no teste de 8 chamadas simultâneas, às vezes uma era recusada
+    # e a API respondia 503 (certo para "Ollama fora", mas o Ollama real aceita bem mais que 5).
+    request_queue_size = 64
+
+
 class Servidores:
     """Sobe um Ollama simulado e a API real (uvicorn) em portas livres."""
 
     def __init__(self, ollama_timeout=5.0, piper_voz=None):
-        self.ollama = ThreadingHTTPServer(("127.0.0.1", 0), OllamaSimulado)
+        self.ollama = ServidorOllama(("127.0.0.1", 0), OllamaSimulado)
         threading.Thread(target=self.ollama.serve_forever, daemon=True).start()
         config = Config(
             api_key=CHAVE,
