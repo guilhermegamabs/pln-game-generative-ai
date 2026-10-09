@@ -130,3 +130,90 @@ As falas abaixo são **sugestões**: fale com as suas palavras.
 ## Se faltar tempo
 
 Corte, nesta ordem: o painel Streamlit (bloco 8), o Espelho da Alma (bloco 5) e os testes. **Nunca corte** o fallback nem o bloco 7, porque são o ponto extra e a disciplina inteira de Front-end.
+
+---
+
+# Falas completas, bloco a bloco
+
+Texto corrido para ler em voz alta (ou adaptar). O tempo entre parênteses é o de fala; o resto do bloco é o jogo respondendo. Fale devagar: cada bloco abaixo leva de 20 a 40 segundos.
+
+## Bloco 1 — Abertura (~25 s de fala)
+
+> "Oi, somos o Guilherme e o Igor, RM565293 e RM563632. Este é o **OS 7 PECADOS**, o MVP da CP5, que implementa o jogo que a gente desenhou na CP4: um RPG narrativo de fantasia sombria em que o jogador é um inquisitor que investiga pecados e acaba corrompido por eles.
+>
+> Essa arte de fundo foi gerada na CP4 com Stable Diffusion XL, rodando local.
+>
+> A stack é a que a CP4 previu: React com TypeScript no front, FastAPI no back, e a IA toda local: o Ollama com o qwen 2.5 de 7 bilhões de parâmetros para texto, e o Piper para voz. Aqui no menu o jogo já mostra que o modelo está carregado e pronto."
+
+## Bloco 2 — Diálogo livre (~35 s de fala)
+
+> "Vou começar uma partida nova. Essa narração que está tocando é voz gerada pelo Piper, não é áudio gravado por ninguém.
+>
+> A cena é a Praça do Pelourinho: o Tomás foi acusado de roubar um amuleto e a Capitã Brenna quer enforcar ele na hora.
+>
+> A primeira mecânica é o **diálogo livre**: eu escrevo o que eu quiser, não escolho de uma lista de opções. Vou dizer: 'Calma, Tomás. Ninguém vai te machucar enquanto eu estiver aqui.'
+>
+> Enquanto ele pensa, explico o que está acontecendo por baixo: cada turno faz duas chamadas à LLM. Na primeira ela só classifica a minha intenção; na segunda o Tomás responde em personagem, já sabendo dessa leitura. A gente separou porque, quando pedia tudo numa chamada só, a classificação errava bem mais.
+>
+> Olha aqui do lado: ele leu como **compaixão**, intensidade 2, e a relação com o Tomás subiu. E aqui embaixo está a **memória**: o Tomás guardou o que eu fiz, e isso volta nas próximas falas. Essa é a quarta mecânica, memória e reputação."
+
+## Bloco 3 — Corrupção (~25 s de fala)
+
+> "Agora vou falar com o Odran, o mercador. Vou tentar comprar ele: 'Te pago 20 moedas para você retirar a acusação.'
+>
+> Repara no painel da direita: a **Avareza** subiu. Essa é a segunda mecânica, o sistema de corrupção, que é o coração do jogo.
+>
+> Um detalhe importante de arquitetura: a IA só lê a intenção. **Quanto** cada pecado sobe é uma tabela fixa no código. Isso foi decisão nossa desde a CP4, porque assim o modelo não inventa progressão, dá para balancear e dá para testar. Tem 45 testes automatizados só nessa parte."
+
+## Bloco 4 — Combate (~30 s de fala)
+
+> "Vou ameaçar a Capitã Brenna e partir para cima. A quinta mecânica é o **combate por turnos**, com as quatro ações que a CP4 descreveu: golpear, defender, usar item e usar o poder demoníaco.
+>
+> Vou **defender** primeiro: além de reduzir o dano, abre uma brecha e o meu próximo golpe sai em dobro. Agora **golpeio**. Vou usar uma **poção**, que vem do inventário e gasta o turno.
+>
+> E o golpe final. Olha o que apareceu: 'Tomás viu tudo' e 'Odran viu tudo'. Matar alguém na frente dos outros derruba a relação com quem estava lá, e eles vão me tratar diferente a partir de agora."
+
+## Bloco 5 — Demônio Interior e Espelho (~35 s de fala)
+
+> "A minha Ira passou de 40, e aqui está o momento mais importante do jogo: **A Fera despertou**.
+>
+> Esse é o Demônio Interior, a terceira mecânica. E repara que tem três IAs acontecendo ao mesmo tempo nesta tela: a fala dela foi gerada agora pela LLM, a voz que você está ouvindo é do Piper, e o retrato foi gerado com Stable Diffusion XL.
+>
+> Mudou mais coisa: no meu HUD apareceram as marcas de corrupção, que é o que os NPCs passam a enxergar em mim. E o botão **Poder demoníaco**, que estava apagado, agora está disponível: causa mais dano, mas alimenta ainda mais a Ira. É o poder que cobra um preço, como a gente escreveu na CP4.
+>
+> Aperto Tab e abro o **Espelho da Alma**, a terceira tela do mockup: os sete pecados, as manifestações e para onde a partida está indo."
+
+## Bloco 6 — Tratamento de erro (~20 s de fala)
+
+> "Agora um teste de robustez. Vou **derrubar o Ollama** aqui no terminal, no meio da partida, e tentar falar com um NPC.
+>
+> O jogo não trava: ele avisa que a IA caiu e continua funcionando com respostas simples. As regras de pecado seguem iguais, porque elas estão no nosso código, não na IA. Isso é o tratamento de erro da IA em tempo real, que o enunciado cita como ponto extra."
+
+## Bloco 7 — Arquitetura, Front-end (~45 s de fala)
+
+> "**Agora começa a parte da disciplina de Front-end: a arquitetura da API.**
+>
+> Esse é o desenho: o jogo no navegador chama a **nossa API em FastAPI**, e só ela conversa com o Ollama, para texto, e com o Piper, para voz. Na CP4 o jogo chamava o Ollama direto; esse desacoplamento é exatamente o que a CP5 pede.
+>
+> No código, a gente usou o padrão **rota e provider**: aqui em `routers/ia_generativa.py` ficam as rotas, que só recebem e validam; e aqui em `providers/ia_provider.py` fica a única parte do sistema que conhece o Ollama e o Piper. Se um dia a gente trocar o serviço de IA, muda só esse arquivo.
+>
+> No `main.py` está o **CORS**, liberando só a origem do jogo, em localhost 5173.
+>
+> Aqui no **Swagger**, em /docs, vou executar a rota **sem a chave**: dá **401**, não autorizado. Agora clico em Authorize, coloco a chave, e executo de novo: **200**, funcionou. A autenticação é por API Key no header X-API-Key.
+>
+> E essa é a evidência que o enunciado pede: olha o terminal da API enquanto eu mando uma fala no jogo. Cada fala vira um POST na nossa API, e outra chamada para a rota de voz. O navegador nunca fala com a porta do Ollama."
+
+## Bloco 8 — Painel, final e fechamento (~25 s de fala)
+
+> "Esse é o **painel em Streamlit**, que consome a mesma API via requests. Mando um texto, ele chama a rota e toca o áudio. Serve para testar a API sem abrir o jogo.
+>
+> Para fechar a partida, uso o **Veredito** sobre o Tomás: é o fim de sessão do MVP. O final depende dos pecados que eu acumulei. Como a minha Ira ficou alta, terminei **Marcado pela Ira**. Tem quatro finais: Redenção, Marcado, Consumido e a derrota em combate.
+>
+> Todo o código, do jogo, da API e do painel, está no repositório, com README explicando como rodar. Obrigado."
+
+## Dicas de narração
+
+- **Fale enquanto o jogo responde.** Cada fala leva uns 5 segundos; use esse tempo para explicar a mecânica, em vez de ficar em silêncio.
+- **Nomeie as mecânicas em voz alta** ("essa é a mecânica 2"): o professor precisa reconhecer 3 ou mais.
+- **Diga "gerado agora"** sempre que o texto ou a voz aparecerem, porque o critério é integração real, e não asset pronto.
+- Se errar, não recomece do zero: pare, respire e repita a frase. Dá para cortar na edição.
