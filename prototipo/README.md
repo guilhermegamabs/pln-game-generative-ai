@@ -48,11 +48,16 @@ Texto livre = fala com o NPC atual.
 | Comando | O que faz |
 |---|---|
 | `/falar [nome]` | Troca de NPC (sem nome, lista presentes com relação) |
-| `/atacar` | Mata o NPC atual (combate simplificado). Ira +20, testemunhas lembram |
+| `/atacar` | Começa um combate por turnos com o NPC atual (Ira +5) ou, já em combate, golpeia (25 de dano). O NPC revida com o dano dele. Derrubar o oponente: Ira +15 e as testemunhas lembram |
+| `/defender` | Em combate: recebe só 1/4 do dano e o próximo golpe sai em dobro |
+| `/poder` | Em combate: usa o poder da manifestação desperta (45 de dano), e o pecado dela sobe 8 |
+| `/fugir` | Em combate: sai da luta; o NPC fica ferido e lembra |
+| `/item [nome]` | Usa `pocao` (+35 de vida) ou `agua_benta` (-10 no pecado mais alto); sem nome, lista o inventário. Em combate, gasta o turno |
 | `/roubar` | Rouba até 25 moedas. Avareza +15 |
 | `/doar <valor>` | Dá moedas. Reduz Avareza, melhora relação |
 | `/status` | "Espelho da Alma": 7 medidores, aparência, manifestações, eventos |
 | `/memorias` | O que o NPC atual lembra de você |
+| `/veredito absolver\|condenar` | Julga Tomás e encerra a partida (final pelos pecados) |
 | `/sair` | Salva e sai |
 
 ## Como funciona

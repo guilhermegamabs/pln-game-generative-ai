@@ -34,9 +34,13 @@ INTENCOES = {
 }
 
 ACOES = {
-    "atacar": {"ira": 20},
+    "atacar": {"ira": 5},  # partir para a violência
+    "matar": {"ira": 15},  # derrubar o oponente: atacar + matar somam os mesmos 20 da CP4
     "roubar": {"avareza": 15},
 }
+
+# Usar o poder de uma manifestação acelera o pecado dela (M3 da CP4: "poder que cobra um preço").
+CUSTO_PODER = 8
 
 # (marca a partir de 40, marca a partir de 70): aparência que os NPCs enxergam no protagonista
 MARCAS = {

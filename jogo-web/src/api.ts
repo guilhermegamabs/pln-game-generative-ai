@@ -11,7 +11,16 @@ export interface NPC {
   rotulo_relacao: string
   vivo: boolean
   ouro: number
+  vida: number
+  vida_max: number
   memorias: string[]
+}
+
+export interface Item {
+  id: string
+  nome: string
+  efeito: string
+  quantidade: number
 }
 
 export interface Estado {
@@ -26,6 +35,10 @@ export interface Estado {
     eventos: string[]
     final: string | null
     aparencia: string[]
+    vida: number
+    vida_max: number
+    inventario: Item[]
+    combate: { npc: string; brecha: boolean } | null
   }
   npcs: NPC[]
   manifestacoes: Record<Pecado, { nome: string; poder: string }>
@@ -39,6 +52,18 @@ export interface Ultimo {
   pecados?: Partial<Record<Pecado, number>>
   manifestacao?: { pecado: Pecado; nome: string; fala: string }
   final?: { titulo: string; texto: string }
+  combate?: {
+    npc: string
+    acao: 'golpe' | 'defender' | 'poder' | 'item' | 'fugir'
+    dano_causado: number
+    dano_recebido: number
+    vida_npc: number
+    vida_npc_max: number
+    vida_jogador: number
+    resultado: 'continua' | 'venceu' | 'fugiu' | 'derrota'
+    poder?: Pecado
+  }
+  item?: { id: string; nome: string; efeito: string }
 }
 
 export interface RespostaJogo {

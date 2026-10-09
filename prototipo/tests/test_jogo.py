@@ -97,10 +97,8 @@ class TestJogo(unittest.TestCase):
         self.assertIn("declara Tomás livre", self.jogo.ultimo["final"]["texto"])
 
     def test_veredito_com_pecado_manifestado_e_final_de_pecado(self):
-        self.jogo.processar("/falar brenna")
-        self.jogo.processar("/atacar")
-        self.jogo.processar("/falar odran")
-        self.jogo.processar("/atacar")
+        self.matar("brenna")
+        self.matar("odran")
         self.jogo.processar("/falar tomas")
         self.jogo.processar("/veredito condenar")
         self.assertEqual(self.jogo.jogador.final, "Marcado pela Ira")
@@ -139,8 +137,8 @@ class TestJogo(unittest.TestCase):
         self.assertEqual(self.jogo.ultimo["manifestacao"]["nome"], "A Fera")
         self.assertNotIn("final", self.jogo.ultimo)
         self.jogo.processar("/falar brenna")
-        self.jogo.jogador.pecados["ira"] = 85
-        self.jogo.processar("/atacar")  # 85 -> 100
+        self.jogo.jogador.pecados["ira"] = 80
+        self.matar("brenna")  # atacar +5 e matar +15: 80 -> 100
         self.assertNotIn("manifestacao", self.jogo.ultimo)  # A Fera já tinha despertado
         self.assertEqual(self.jogo.ultimo["final"]["titulo"], "Consumido pela Ira")
 
@@ -162,6 +160,14 @@ class TestJogo(unittest.TestCase):
 
     def tearDown(self):
         self.pasta.cleanup()
+
+    def matar(self, npc):
+        """Combate até o NPC cair (com vida infinita, para o teste não depender do balanceamento de dano)."""
+        self.jogo.processar(f"/falar {npc}")
+        self.jogo.jogador.vida_max = self.jogo.jogador.vida = 10_000
+        self.jogo.processar("/atacar")
+        while self.jogo.jogador.combate and not self.jogo.encerrado:
+            self.jogo.processar("/atacar")
 
     def novo_jogo(self, cliente, carregar=False):
         return Jogo(cliente, carregar_mundo(MUNDO), self.save, carregar=carregar, saida=self.linhas.append)
@@ -186,10 +192,8 @@ class TestJogo(unittest.TestCase):
         self.assertIn("está morto", self.linhas[-1])
 
     def test_manifestacao_desperta_ao_cruzar_40(self):
-        self.jogo.processar("/falar brenna")
-        self.jogo.processar("/atacar")
-        self.jogo.processar("/falar odran")
-        self.jogo.processar("/atacar")
+        self.matar("brenna")
+        self.matar("odran")
         self.assertEqual(self.jogo.jogador.manifestacoes, ["ira"])
         self.assertTrue(any("A Fera desperta" in linha for linha in self.linhas))
 
@@ -199,6 +203,109 @@ class TestJogo(unittest.TestCase):
         continuar = self.jogo.processar("/atacar")
         self.assertFalse(continuar)
         self.assertEqual(self.jogo.jogador.final, "Consumido pela Ira")
+
+    # ---------- combate por turnos (M5) ----------
+
+    def test_combate_em_turnos_com_revide(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        brenna = self.jogo.npcs["brenna"]
+        self.assertEqual(brenna.vida, 55)  # 80 - 25
+        self.assertEqual(self.jogo.jogador.vida, 84)  # revide de 16
+        self.assertEqual(self.jogo.jogador.combate, {"npc": "brenna", "brecha": False})
+        self.assertEqual(self.jogo.jogador.pecados["ira"], 5)  # só atacar; matar vem quando ela cair
+        self.assertEqual(self.jogo.ultimo["combate"]["resultado"], "continua")
+        for _ in range(3):
+            self.jogo.processar("/atacar")
+        self.assertFalse(brenna.vivo)
+        self.assertIsNone(self.jogo.jogador.combate)
+        self.assertEqual(self.jogo.jogador.pecados["ira"], 20)
+        self.assertEqual(self.jogo.jogador.vida, 100 - 3 * 16)  # o golpe que derruba não sofre revide
+        self.assertEqual(self.jogo.ultimo["combate"]["resultado"], "venceu")
+        self.assertIn("Viu o inquisitor matar Capitã Brenna na praça.", self.jogo.npcs["odran"].memorias)
+
+    def test_defender_reduz_dano_e_dobra_o_proximo_golpe(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/defender")
+        self.assertEqual(self.jogo.jogador.vida, 84 - 4)  # 16 * 1/4
+        self.jogo.processar("/atacar")
+        self.assertEqual(self.jogo.ultimo["combate"]["dano_causado"], 50)
+        self.assertEqual(self.jogo.npcs["brenna"].vida, 5)
+
+    def test_em_combate_nao_da_para_conversar_nem_julgar(self):
+        self.jogo.processar("/falar odran")
+        self.jogo.processar("/atacar")
+        for entrada in ("Calma, vamos conversar", "/falar tomas", "/veredito absolver", "/roubar"):
+            self.jogo.processar(entrada)
+            self.assertIn("Você está em combate com Odran", self.linhas[-1])
+        self.assertFalse(self.jogo.encerrado)
+        self.assertEqual(self.jogo.atual, "odran")
+
+    def test_fugir_encerra_o_combate_e_o_npc_lembra(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/fugir")
+        brenna = self.jogo.npcs["brenna"]
+        self.assertIsNone(self.jogo.jogador.combate)
+        self.assertTrue(brenna.vivo)
+        self.assertEqual(brenna.vida, 55)  # o ferimento continua
+        self.assertIn("O inquisitor me atacou e fugiu da luta.", brenna.memorias)
+
+    def test_poder_demoniaco_exige_manifestacao_e_custa_pecado(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/poder")
+        self.assertIn("Nenhum pecado despertou", self.linhas[-1])
+        self.jogo.jogador.pecados["ira"] = 50
+        self.jogo.jogador.manifestacoes.append("ira")
+        self.jogo.processar("/poder")
+        self.assertEqual(self.jogo.jogador.pecados["ira"], 58)
+        self.assertEqual(self.jogo.npcs["brenna"].vida, 10)  # 55 - 45
+        self.assertEqual(self.jogo.ultimo["combate"]["poder"], "ira")
+
+    def test_morrer_em_combate_e_derrota(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.jogador.vida = 20
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/atacar")
+        self.assertTrue(self.jogo.encerrado)
+        self.assertEqual(self.jogo.jogador.final, "Morto em Cinzaforte")
+        self.assertEqual(self.jogo.ultimo["combate"]["resultado"], "derrota")
+
+    def test_tomas_amarrado_nao_revida(self):
+        self.jogo.processar("/atacar")
+        self.assertFalse(self.jogo.npcs["tomas"].vivo)  # 20 de vida: cai no primeiro golpe
+        self.assertEqual(self.jogo.jogador.vida, 100)
+
+    def test_itens_do_inventario(self):
+        self.jogo.processar("/item pocao")
+        self.assertIn("vida já está cheia", self.linhas[-1])
+        self.jogo.jogador.vida = 50
+        self.jogo.processar("/item pocao")
+        self.assertEqual(self.jogo.jogador.vida, 85)
+        self.assertEqual(self.jogo.jogador.inventario["pocao"], 1)
+        self.jogo.jogador.pecados["avareza"] = 30
+        self.jogo.processar("/item agua benta")
+        self.assertEqual(self.jogo.jogador.pecados["avareza"], 20)
+        self.assertEqual(self.jogo.ultimo["pecados"], {"avareza": -10})
+        self.jogo.processar("/item agua")
+        self.assertIn("Você não tem", self.linhas[-1])
+
+    def test_usar_item_em_combate_gasta_o_turno(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        self.jogo.processar("/item pocao")
+        self.assertEqual(self.jogo.jogador.vida, 100 - 16)  # 84 + 35 limitado a 100, depois o revide
+        self.assertEqual(self.jogo.ultimo["combate"]["acao"], "item")
+
+    def test_save_preserva_combate_em_andamento(self):
+        self.jogo.processar("/falar brenna")
+        self.jogo.processar("/atacar")
+        carregado = self.novo_jogo(ClienteFalso(), carregar=True)
+        self.assertEqual(carregado.jogador.combate["npc"], "brenna")
+        self.assertEqual(carregado.npcs["brenna"].vida, 55)
+        self.assertEqual(carregado.jogador.vida, 84)
 
     def test_save_e_load_preservam_estado(self):
         self.jogo.processar("/roubar")

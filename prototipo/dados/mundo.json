@@ -14,7 +14,9 @@
       "segredo": "Roubou mesmo o amuleto, para vendê-lo e pagar o remédio da filha. Viu Odran fazendo um ritual com moedas à meia-noite.",
       "reage_bem_a": ["compaixao", "suborno"],
       "relacao": 0,
-      "ouro": 2
+      "ouro": 2,
+      "vida_max": 20,
+      "dano": 0
     },
     {
       "id": "brenna",
@@ -25,7 +27,9 @@
       "segredo": "Recebe ouro de Odran para prender quem ele manda.",
       "reage_bem_a": ["violencia", "ameaca"],
       "relacao": 0,
-      "ouro": 40
+      "ouro": 40,
+      "vida_max": 80,
+      "dano": 16
     },
     {
       "id": "odran",
@@ -36,7 +40,9 @@
       "segredo": "O amuleto é o foco de um culto à Avareza. Odran alimenta a manifestação do pecado com o ouro da cidade.",
       "reage_bem_a": ["suborno", "ganancia", "negociacao"],
       "relacao": 0,
-      "ouro": 120
+      "ouro": 120,
+      "vida_max": 40,
+      "dano": 8
     }
   ],
   "manifestacoes": {

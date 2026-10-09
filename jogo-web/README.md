@@ -29,7 +29,15 @@ npm run dev                    # http://localhost:5173
 
 - Digite livremente o que quer dizer ao NPC e aperte **Enter**. A LLM classifica a intenção, o código aplica os pecados e o NPC responde (com voz).
 - **Na praça**: clique em outro personagem para falar com ele.
-- **Atacar** (pede confirmação), **Roubar**, **Doar 10**: ações com consequência fixa.
+- **Atacar** (pede confirmação), **Roubar**, **Doar 10**, **Itens**: ações com consequência fixa.
+- **Combate por turnos**: Atacar abre a luta. A vida do inquisitor fica no HUD e a do oponente aparece ao lado do nome dele. Em combate, o diálogo trava e as ações passam a ser:
+  - **Golpear**: 25 de dano;
+  - **Defender**: recebe 1/4 do dano e o próximo golpe sai em dobro;
+  - **Poder**: o da manifestação desperta, 45 de dano, mas o pecado sobe 8;
+  - **Poção** e **Água benta**;
+  - **Fugir**.
+
+  Cada ação gasta o turno e o oponente revida. Tomás, amarrado, não revida. Vida zerada é derrota: final **Morto em Cinzaforte**.
 - **Memórias**: o que o NPC lembra de você. **Espelho da Alma** (`Tab`): os 7 pecados, aparência, manifestações e finais.
 - **Veredito**: absolver ou condenar Tomás encerra a partida. O final depende dos pecados naquele momento:
   - **Redenção**: todos abaixo de 40;

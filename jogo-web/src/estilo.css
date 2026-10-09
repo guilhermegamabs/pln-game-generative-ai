@@ -86,7 +86,18 @@ button:disabled { cursor: default; opacity: .45; }
 .hud-jogador .nome { font-family: var(--titulo); font-size: 26px; color: var(--ouro-claro); }
 .linha { display: flex; justify-content: space-between; gap: 12px; font-size: 19px; color: var(--texto-2); margin-top: 6px; }
 .hud-ouro { color: var(--ouro-claro); white-space: nowrap; }
-.hud-evento { margin-top: 6px; font-size: 18px; color: var(--texto-2); }
+.hud-vida { margin: 10px 0 4px; height: 14px; }
+.hud-vida i { background: linear-gradient(90deg, #6e0f0c, #d43a2a); transition: width .5s ease; }
+.hud-vida.ferido { animation: ferido .5s ease; }
+@keyframes ferido { 0%, 100% { box-shadow: none; } 30% { box-shadow: 0 0 14px 3px rgba(224,72,47,.8); } }
+.npc-vida { display: flex; align-items: center; gap: 10px; font-size: 18px; color: var(--ruim); white-space: nowrap; }
+.npc-vida .barra { width: 160px; height: 12px; }
+.npc-vida .barra i { background: linear-gradient(90deg, #6e0f0c, #e0482f); transition: width .5s ease; }
+.relato-combate { color: #e8b9a6; }
+.acoes.combate .botao.poder { border-color: var(--brasa); color: #e8b9a6; }
+.inventario .item { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 10px; }
+.inventario .item small { display: block; font-size: 17px; color: var(--texto-2); }
+.inventario .item .botao { height: 34px; font-size: 14px; }
 .hud-marcas { margin-top: 6px; font-size: 18px; font-style: italic; color: #e38b74; }
 
 .presentes { left: 28px; top: 214px; width: 420px; padding: 12px 18px; }

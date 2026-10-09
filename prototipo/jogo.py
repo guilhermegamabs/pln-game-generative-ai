@@ -37,6 +37,18 @@ MAX_HISTORICO = 8
 MAX_MEMORIAS = 12
 VALOR_ROUBO = 25
 
+# Combate por turnos (M5 da CP4): valores fixos, como a corrupção, para o balanceamento ser previsível e testável.
+DANO_GOLPE = 25
+DANO_PODER = 45
+FRACAO_DEFESA = 0.25  # defendendo, o jogador recebe só 1/4 do dano e abre uma brecha (próximo dano em dobro)
+CURA_POCAO = 35
+PURIFICACAO_AGUA = 10
+ITENS = {
+    "pocao": ("Poção de cura", f"recupera {CURA_POCAO} de vida"),
+    "agua_benta": ("Água benta", f"purifica {PURIFICACAO_AGUA} pontos do pecado mais alto"),
+}
+EM_COMBATE = {"atacar", "defender", "poder", "item", "fugir", "status", "memorias", "ajuda", "sair"}
+
 
 def _limpar(texto):
     # Com JSON Schema no Ollama, o qwen2.5:7b às vezes devolve espaços duplos entre todas as palavras
@@ -46,7 +58,11 @@ def _limpar(texto):
 AJUDA = """Digite livremente o que quer dizer ao NPC atual. Comandos:
   /falar [nome] [fala]   escolhe com quem falar e, opcionalmente, já diz algo
                          (sem nome, lista os presentes; ex.: /falar brenna Solte esse homem)
-  /atacar         ataca o NPC atual (combate simplificado)
+  /atacar         ataca o NPC atual e começa um combate por turnos (ou golpeia, se já estiver em combate)
+  /defender       em combate: recebe 1/4 do dano e o próximo golpe sai em dobro
+  /poder          em combate: usa o poder de uma manifestação desperta (mais dano, mais pecado)
+  /fugir          em combate: abandona a luta (o NPC não esquece)
+  /item [nome]    usa um item (pocao, agua_benta); sem nome, lista o inventário
   /roubar         rouba moedas do NPC atual
   /doar <valor>   dá moedas ao NPC atual
   /status         medidores de pecado, aparência, manifestações
@@ -96,8 +112,12 @@ class Jogo:
         if not entrada or self.encerrado:
             return not self.encerrado
         self.ultimo = {}
+        comando, _, argumento = entrada[1:].partition(" ") if entrada.startswith("/") else ("", "", "")
+        if self.jogador.combate and comando.lower() not in EM_COMBATE:
+            npc = self.npcs[self.jogador.combate["npc"]]
+            self.saida(f"Você está em combate com {npc.nome}. Use /atacar, /defender, /poder, /item ou /fugir.")
+            return True
         if entrada.startswith("/"):
-            comando, _, argumento = entrada[1:].partition(" ")
             metodo = getattr(self, f"cmd_{comando.lower()}", None)
             if metodo is None:
                 self.saida("Comando desconhecido. Digite /ajuda.")
@@ -192,19 +212,91 @@ class Jogo:
         return None, ""
 
     def cmd_atacar(self, _):
+        if self.jogador.combate:
+            npc = self.npcs[self.jogador.combate["npc"]]
+            self.saida(f"\nVocê golpeia {npc.nome}.")
+            self._turno_combate(npc, DANO_GOLPE, "golpe")
+            return
         npc = self._npc_atual_vivo()
         if npc is None:
             return
-        npc.vivo = False
-        self.saida(f"\nVocê avança sobre {npc.nome}. O combate é breve. {npc.nome} cai sem vida sobre as pedras da praça.")
-        for testemunha in self.npcs.values():
-            if testemunha.vivo:
-                delta = corrupcao.delta_relacao("violencia", 3, testemunha.reage_bem_a)
-                testemunha.ajustar_relacao(delta)
-                testemunha.lembrar(f"Viu o inquisitor matar {npc.nome} na praça.", MAX_MEMORIAS)
-                self.saida(f"  {testemunha.nome} viu tudo (relação {delta:+d}).")
-        self.jogador.eventos.append(f"Matou {npc.nome}.")
-        self._consequencias(corrupcao.ACOES["atacar"], gatilho=f"matar {npc.nome}", detalhe="ação: atacar")
+        self.jogador.combate = {"npc": npc.id, "brecha": False}
+        npc.ajustar_relacao(-30)
+        npc.lembrar("O inquisitor me atacou no meio da praça.", MAX_MEMORIAS)
+        self.saida(f"\nVocê avança sobre {npc.nome}. O combate começa.")
+        self._consequencias(corrupcao.ACOES["atacar"], gatilho=f"atacar {npc.nome}", detalhe="ação: atacar")
+        if not self.encerrado:
+            self._turno_combate(npc, DANO_GOLPE, "golpe")
+
+    def cmd_defender(self, _):
+        npc = self._npc_em_combate()
+        if npc is None:
+            return
+        self.saida(f"\nVocê ergue a guarda e espera a brecha de {npc.nome}.")
+        self._turno_combate(npc, 0, "defender")
+
+    def cmd_poder(self, _):
+        npc = self._npc_em_combate()
+        if npc is None:
+            return
+        if not self.jogador.manifestacoes:
+            self.saida("Nenhum pecado despertou dentro de você ainda. Não há poder a pedir.")
+            return
+        pecado = max(self.jogador.manifestacoes, key=lambda p: self.jogador.pecados[p])
+        manifestacao = self.manifestacoes[pecado]
+        self.saida(f"\nVocê aceita o poder de {manifestacao['nome']}: {manifestacao['poder']}.")
+        self._consequencias(
+            {pecado: corrupcao.CUSTO_PODER}, gatilho=f"usar o poder de {manifestacao['nome']}", detalhe="ação: poder demoníaco"
+        )
+        if not self.encerrado:
+            self._turno_combate(npc, DANO_PODER, "poder")
+            self.ultimo["combate"]["poder"] = pecado
+
+    def cmd_fugir(self, _):
+        npc = self._npc_em_combate()
+        if npc is None:
+            return
+        self.jogador.combate = None
+        npc.lembrar("O inquisitor me atacou e fugiu da luta.", MAX_MEMORIAS)
+        self.jogador.eventos.append(f"Fugiu do combate com {npc.nome}.")
+        self.saida(f"\nVocê recua e some na multidão. {npc.nome} fica de pé, ofegante, e não vai esquecer.")
+        self._registrar_combate(npc, "fugir", "fugiu")
+        self._salvar()
+
+    def cmd_item(self, nome):
+        inventario = self.jogador.inventario
+        if not nome:
+            itens = [f"{ITENS[i][0]} x{q} ({ITENS[i][1]})" for i, q in inventario.items() if q > 0 and i in ITENS]
+            self.saida("Inventário: " + ("; ".join(itens) if itens else "vazio"))
+            return
+        chave = _sem_acento(nome).replace(" ", "_")
+        item = next((i for i in ITENS if i.startswith(chave) or _sem_acento(ITENS[i][0]).startswith(_sem_acento(nome))), None)
+        if item is None or inventario.get(item, 0) <= 0:
+            self.saida(f"Você não tem '{nome}'. Use /item para ver o inventário.")
+            return
+        if item == "pocao":
+            if self.jogador.vida >= self.jogador.vida_max:
+                self.saida("Sua vida já está cheia.")
+                return
+            antes = self.jogador.vida
+            self.jogador.vida = min(self.jogador.vida_max, antes + CURA_POCAO)
+            efeito = f"vida +{self.jogador.vida - antes}"
+            self.saida(f"\nVocê bebe a poção de cura ({efeito}). Vida: {self.jogador.vida}/{self.jogador.vida_max}.")
+        else:
+            pecado, valor = max(self.jogador.pecados.items(), key=lambda item: item[1])
+            if valor == 0:
+                self.saida("Não há pecado em você para a água benta purificar.")
+                return
+            efeito = f"{NOMES[pecado]} -{min(valor, PURIFICACAO_AGUA)}"
+            self.saida(f"\nVocê derrama a água benta sobre as mãos. A {NOMES[pecado]} recua por um instante.")
+        inventario[item] -= 1
+        self.ultimo["item"] = {"id": item, "nome": ITENS[item][0], "efeito": efeito}
+        if item == "agua_benta":
+            self._consequencias({pecado: -PURIFICACAO_AGUA}, gatilho="usar água benta", detalhe="item: água benta")
+        if self.jogador.combate and not self.encerrado:
+            # Usar um item gasta o turno: o oponente ataca.
+            self._turno_combate(self.npcs[self.jogador.combate["npc"]], 0, "item")
+        self._salvar()
 
     def cmd_roubar(self, _):
         npc = self._npc_atual_vivo()
@@ -306,9 +398,81 @@ class Jogo:
             return None
         return npc
 
+    def _npc_em_combate(self):
+        if not self.jogador.combate:
+            self.saida("Você não está em combate. Use /atacar para começar um.")
+            return None
+        return self.npcs[self.jogador.combate["npc"]]
+
+    def _turno_combate(self, npc, dano, acao):
+        """Um turno: o golpe do jogador (se houver) e, se o oponente seguir de pé, o revide dele."""
+        combate = self.jogador.combate
+        causado = 0
+        if dano:
+            if combate["brecha"]:
+                dano *= 2
+                self.saida("Você aproveita a brecha: o golpe sai em dobro.")
+            combate["brecha"] = False
+            causado = min(dano, npc.vida)
+            npc.vida -= causado
+            self.saida(f"  {npc.nome} sofre {causado} de dano (vida {npc.vida}/{npc.vida_max}).")
+            if npc.vida == 0:
+                self._registrar_combate(npc, acao, "venceu", causado=causado)
+                self._derrubar(npc)
+                return
+        recebido = round(npc.dano * FRACAO_DEFESA) if acao == "defender" else npc.dano
+        if acao == "defender":
+            combate["brecha"] = True
+        if npc.dano == 0:
+            self.saida(f"  {npc.nome} não tem como revidar.")
+        else:
+            self.jogador.vida = max(0, self.jogador.vida - recebido)
+            self.saida(f"  {npc.nome} revida: {recebido} de dano (sua vida {self.jogador.vida}/{self.jogador.vida_max}).")
+        morreu = self.jogador.vida == 0
+        self._registrar_combate(npc, acao, "derrota" if morreu else "continua", causado=causado, recebido=recebido)
+        if morreu:
+            self.jogador.combate = None
+            self.jogador.eventos.append(f"Morreu lutando contra {npc.nome}.")
+            self._encerrar(
+                "Morto em Cinzaforte",
+                f"O golpe de {npc.nome} te derruba sobre as pedras da praça. A multidão fecha o círculo, e o "
+                f"inquisitor que veio julgar a cidade termina julgado por ela.",
+            )
+        else:
+            self._salvar()
+
+    def _derrubar(self, npc):
+        npc.vivo = False
+        self.jogador.combate = None
+        self.saida(f"\n{npc.nome} cai sem vida sobre as pedras da praça.")
+        for testemunha in self.npcs.values():
+            if testemunha.vivo:
+                delta = corrupcao.delta_relacao("violencia", 3, testemunha.reage_bem_a)
+                testemunha.ajustar_relacao(delta)
+                testemunha.lembrar(f"Viu o inquisitor matar {npc.nome} na praça.", MAX_MEMORIAS)
+                self.saida(f"  {testemunha.nome} viu tudo (relação {delta:+d}).")
+        self.jogador.eventos.append(f"Matou {npc.nome}.")
+        self._consequencias(corrupcao.ACOES["matar"], gatilho=f"matar {npc.nome}", detalhe="ação: matar")
+
+    def _registrar_combate(self, npc, acao, resultado, causado=0, recebido=0):
+        self.ultimo["combate"] = {
+            "npc": npc.id,
+            "acao": acao,
+            "dano_causado": causado,
+            "dano_recebido": recebido,
+            "vida_npc": npc.vida,
+            "vida_npc_max": npc.vida_max,
+            "vida_jogador": self.jogador.vida,
+            "resultado": resultado,
+        }
+
     def _consequencias(self, deltas, gatilho, detalhe):
         aplicados, novas = corrupcao.aplicar(self.jogador.pecados, deltas, self.jogador.manifestacoes)
-        self.ultimo["pecados"] = {p: v for p, v in aplicados.items() if v}
+        # Um comando pode aplicar pecado mais de uma vez (atacar e matar no mesmo golpe): soma tudo.
+        acumulado = self.ultimo.setdefault("pecados", {})
+        for pecado, valor in aplicados.items():
+            if valor:
+                acumulado[pecado] = acumulado.get(pecado, 0) + valor
         partes = [detalhe] + [f"{NOMES[p]} {v:+d}" for p, v in aplicados.items() if v]
         self.saida(f"  [{' · '.join(partes)}]")
 
@@ -375,6 +539,14 @@ class Jogo:
                 "eventos": list(self.jogador.eventos),
                 "final": self.jogador.final,
                 "aparencia": corrupcao.aparencia(self.jogador.pecados),
+                "vida": self.jogador.vida,
+                "vida_max": self.jogador.vida_max,
+                "inventario": [
+                    {"id": i, "nome": ITENS[i][0], "efeito": ITENS[i][1], "quantidade": q}
+                    for i, q in self.jogador.inventario.items()
+                    if i in ITENS
+                ],
+                "combate": self.jogador.combate,
             },
             "npcs": [
                 {
@@ -385,6 +557,8 @@ class Jogo:
                     "rotulo_relacao": rotulo_relacao(npc.relacao),
                     "vivo": npc.vivo,
                     "ouro": npc.ouro,
+                    "vida": npc.vida,
+                    "vida_max": npc.vida_max,
                     "memorias": list(npc.memorias),
                 }
                 for npc in self.npcs.values()
@@ -401,7 +575,7 @@ class Jogo:
     def hud(self):
         visiveis = [p for p in PECADOS if p in ("ira", "avareza") or self.jogador.pecados[p] > 0]
         medidores = " | ".join(f"{NOMES[p]} {_barra(self.jogador.pecados[p])} {self.jogador.pecados[p]}" for p in visiveis)
-        return f"  {medidores} | Ouro {self.jogador.ouro}"
+        return f"  Vida {self.jogador.vida}/{self.jogador.vida_max} | {medidores} | Ouro {self.jogador.ouro}"
 
 
 def _sem_acento(texto):
