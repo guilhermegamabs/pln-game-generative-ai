@@ -62,7 +62,7 @@ A IA não tinha permissão para publicar nada no GitHub nem para mexer em proces
 - O teste "voz sem configuração" passava ou falhava conforme a variável `PIPER_VOZ` do terminal. Foi corrigido para não depender do ambiente.
 - Decisão de segurança: se a chave não estiver configurada no servidor, a API recusa tudo (500) em vez de ficar aberta.
 - O texto foi testado só com Ollama simulado nesta etapa. O teste com o modelo real ficou registrado como pendência e foi feito no prompt-chave 5.
-- *[Grupo: acrescentar aqui o que revisaram ou mudaram nesse código.]*
+- **Revisão do grupo (09/10, máquina de gravação):** as 48 provas da API foram rodadas de novo no Windows, com o Piper configurado (`PIPER_VOZ`). Uma falhou: `test_log_de_cada_chamada_a_ia` lia o `.jsonl` sem informar a codificação, e o Windows assumia cp1252, estourando nos acentos da memória gerada pela LLM. Corrigido no commit `fix(testes): rodar a suíte e o e2e no Windows`. Também foi conferido na prática que, sem a chave no header, a rota devolve **401**, e com a chave devolve **201/200**.
 
 ### Prompt-chave 2: o jogo deixa de chamar o Ollama direto
 
@@ -80,7 +80,9 @@ A IA não tinha permissão para publicar nada no GitHub nem para mexer em proces
   - **indisponível** (503: conexão recusada, timeout ou modelo não baixado) ativa o fallback;
   - **resposta ruim do modelo** (502) não ativa: o jogo só tenta de novo.
 - No `ClienteOllama` antigo, o erro 404 (modelo não baixado) passou a contar como "indisponível".
-- *[Grupo: acrescentar.]*
+- **Revisão do grupo:** o fallback foi testado de verdade na gravação de 09/10: com a partida em andamento, o Ollama foi derrubado e o jogo
+  passou a mostrar "IA indisponível: modo offline (fala simples)" e seguiu aceitando falas, sem travar. Confirmou-se também que os medidores
+  de pecado continuaram corretos no modo offline, porque as regras ficam no código e não dependem da IA.
 
 ### Prompt-chave 3: o painel de consumo via requests
 
@@ -94,7 +96,9 @@ A IA não tinha permissão para publicar nada no GitHub nem para mexer em proces
 
 **O que foi ajustado, corrigido ou rejeitado:**
 - O commit só foi feito depois que o grupo pediu para trocar o autor do git para a conta pessoal ("pode fazer o commit, mas antes muda pro meu usuario pessoal"). A troca foi feita apenas neste repositório.
-- *[Grupo: acrescentar.]*
+- **Revisão do grupo:** as 7 provas do painel foram executadas na máquina de gravação e passaram. O painel ficou como ferramenta de teste da
+  API, fora do fluxo do jogo: quem joga usa só o `jogo-web`. Serve de evidência para a disciplina de Front-end, que pede um front consumindo
+  a API via `requests`.
 
 ### Prompt-chave 4: testes de integração para buscar o 10
 
@@ -179,7 +183,7 @@ O 3b foi **rejeitado**: ele quebra a mecânica de memória (M4). O jogo ficou co
 
 **O que foi validado com o modelo real:** um turno completo pela interface, em 136 s. Fala, emoção, intenção lida e memória apareceram, sem erros no console.
 
-*[Grupo: acrescentar o que revisaram ou mudaram nas telas e nas regras do veredito.]*
+**Revisão do grupo:** ao rodar o teste de ponta a ponta na máquina de gravação (Windows), ele não subia. Dois problemas de portabilidade que só aparecem fora do Linux: o `rodar.sh` procurava `.venv/bin`, que no Windows é `.venv/Scripts`, e o `jogar.mjs` montava o caminho dos prints com `URL.pathname`, que vira `/C:/...` e gerava `C:\C:\...`, além de ter o Chrome fixo em `/usr/bin/google-chrome`. Depois da correção, os **17 passos passaram**. Na partida gravada, o grupo conferiu as telas na prática: menu, gameplay com HUD, combate e o retorno ao diálogo quando a luta termina em fuga.
 
 ### Prompt-chave 8: combate por turnos, vida e inventário
 
