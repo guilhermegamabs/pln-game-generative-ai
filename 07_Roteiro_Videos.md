@@ -1,50 +1,132 @@
-# Roteiro dos vídeos da CP5
+# Roteiro do vídeo da CP5
 
-Dois vídeos, um por disciplina. As falas são sugestões; falem com as próprias palavras.
+**Um vídeo único, de 5 minutos, para as duas disciplinas.** O PLN pede de 2 a 5 minutos com o MVP em execução; o Front-end pede "um vídeo simples para explicar um pouco do jogo e da arquitetura". A parte de arquitetura (bloco 7) é anunciada em voz alta, para o professor de Front-end achar o trecho dele.
 
-**Antes de gravar:**
-- Gravar na máquina com GPU, onde cada fala leva poucos segundos. Em CPU, cada fala leva de 1 a 2 minutos; se gravar assim, corte as esperas na edição e diga isso na narração.
-- Começar com **Novo Jogo** (sem save) e com a voz ligada nas Opções.
-- Deixar o terminal da API visível ao lado do navegador nos trechos de arquitetura.
-- Gravar em 1920x1080, com o navegador em tela cheia (F11).
+As falas abaixo são **sugestões**: fale com as suas palavras.
 
-## Vídeo 1: PLN, MVP jogável (alvo de 4 minutos, máximo 5)
+## Antes de gravar
 
-O PDF pede: menu, jogabilidade das mecânicas e o momento em que o conteúdo de IA aparece ou soa. Para o ponto extra, os itens precisam ficar "evidenciados no vídeo".
+- [ ] Gravar na máquina com GPU (cada fala leva uns 5 s; no notebook sem GPU leva de 1 a 2 minutos).
+- [ ] Ollama, API e jogo no ar; três terminais, como no `README.md`.
+- [ ] Navegador em tela cheia (F11), 1920x1080, **voz ligada**.
+- [ ] Começar do zero: **Novo Jogo**.
+- [ ] Terminal da API visível ao lado do navegador nos blocos 6 e 7.
+- [ ] **Não deixar a chave de API aparecer na tela** (nem o `.env`, nem o `.env.local`).
+- [ ] VS Code já aberto nos arquivos `api/routers/ia_generativa.py`, `api/providers/ia_provider.py` e `api/main.py`.
 
-| Tempo | O que mostrar | O que falar |
-|---|---|---|
-| 0:00 a 0:20 | Menu com a arte, o status "qwen2.5:7b via API do grupo · pronto" e o aviso de IA | OS 7 PECADOS, RPG narrativo da CP4. O MVP foi feito em React e TypeScript com back-end FastAPI, como a CP4 previu. A arte do menu foi gerada com Stable Diffusion XL na CP4. |
-| 0:20 a 0:35 | Clicar em Novo Jogo; a narração de abertura toca | A narração é voz gerada pelo Piper TTS. Estamos na Praça do Pelourinho: Tomás é acusado de roubo e a Capitã Brenna quer enforcá-lo. |
-| 0:35 a 1:10 | Digitar "Calma, Tomás. Eu vou te ajudar."; "pensando"; resposta com voz; painéis Intenção lida e Memória | **M1, diálogo livre.** O que eu digito vai para a LLM duas vezes: primeiro ela classifica a intenção (compaixão), depois o Tomás responde em personagem. A voz é sintetizada na hora pelo Piper. O Tomás grava uma memória, que é a M4. |
-| 1:10 a 1:40 | Ir até o Odran; "Te pago 20 moedas para você retirar a acusação"; medidor de Avareza subindo; depois Roubar | **M2, corrupção.** A LLM só lê a intenção (suborno); quanto o pecado sobe é regra fixa no código, então o modelo não inventa progressão. |
-| 1:40 a 2:30 | Ir até a Brenna, Atacar e confirmar; barra de vida caindo; Defender, Golpear em dobro, Poção, golpe final; "Tomás viu tudo" | **M5, combate por turnos**, com as quatro ações da CP4. Defender abre uma brecha; a poção vem do inventário. Quando a Brenna cai, as testemunhas registram, e isso muda como elas me tratam. |
-| 2:30 a 3:05 | Com o Tomás, "Eu vou te matar, ladrão!"; a Ira passa de 40; "A Fera sussurra" com retrato e voz; marcas no HUD | **M3, Demônio Interior.** A Ira passou de 40 e a manifestação despertou. A fala dela é gerada pela LLM e a voz pelo Piper. O retrato é do SDXL. A aparência mudou: os NPCs passam a ver as veias escuras. |
-| 3:05 a 3:25 | Tab: Espelho da Alma | A terceira tela do mockup: os sete pecados, as manifestações e o progresso para cada final. |
-| 3:25 a 3:50 | Parar o Ollama (Ctrl+C) e falar com o Odran; aviso de modo offline; o jogo segue | Tratamento de erro da IA em tempo real: se o modelo cair, o jogo avisa e continua com falas simples, sem travar. |
-| 3:50 a 4:20 | Veredito, Condenar; tela "Marcado pela Ira" | O fim da sessão: o veredito sobre o Tomás. O final depende dos pecados: Redenção, Marcado, Consumido ou derrota em combate. |
-| 4:20 a 4:45 | Terminal: `npm run e2e` passando (pode acelerar) e os resultados do pytest | Os testes automatizados cobrem as mecânicas: 45 do núcleo, 48 da API, 7 do painel e um teste ponta a ponta que joga a partida inteira no navegador. |
+---
 
-Checklist do que **precisa** aparecer:
+## Bloco 1 — Abertura (0:00 a 0:30)
+
+**Mostrar:** tela de menu, com a arte de fundo e o status "qwen2.5:7b via API do grupo · pronto".
+
+**Falar:**
+- Nome do jogo, integrantes e RMs.
+- "RPG narrativo de fantasia sombria; é a implementação do jogo que a gente desenhou na CP4."
+- "A arte do menu foi gerada com Stable Diffusion XL, ainda na CP4."
+- "Stack: React com TypeScript no front, FastAPI no back, Ollama para texto e Piper para voz. É a mesma stack que a CP4 previu."
+
+## Bloco 2 — Diálogo livre, a mecânica central (0:30 a 1:15)
+
+**Mostrar:** clicar em **Novo Jogo**; a narração de abertura tocando; digitar para o Tomás: *"Calma, Tomás. Ninguém vai te machucar enquanto eu estiver aqui."*; o indicador "pensando"; a resposta com voz; os painéis **Intenção lida** e **Memória**.
+
+**Falar:**
+- "Essa narração é voz gerada pelo Piper, rodando local."
+- "Mecânica 1, diálogo livre: eu escrevo o que quiser, não escolho de uma lista."
+- "O turno faz duas chamadas à LLM: primeiro ela só classifica a intenção, aqui compaixão, depois o Tomás responde em personagem."
+- "Separamos as duas porque, quando pedíamos tudo junto, a classificação errava mais."
+- "Mecânica 4: o NPC guarda uma memória do que aconteceu, e ela entra nos próximos turnos."
+
+## Bloco 3 — Corrupção (1:15 a 1:45)
+
+**Mostrar:** clicar no **Odran**; digitar *"Te pago 20 moedas para você retirar a acusação."*; o medidor de **Avareza** subindo no painel da direita.
+
+**Falar:**
+- "Mecânica 2: cada escolha alimenta um dos sete pecados."
+- "A IA só lê a intenção. **Quanto** o pecado sobe é regra fixa no código, então o modelo não inventa progressão e o balanceamento é testável."
+
+## Bloco 4 — Combate (1:45 a 2:40)
+
+**Mostrar:** ir até a **Brenna**, ameaçar, clicar em **Atacar** e confirmar; usar **Defender**, depois **Golpear**, depois **Poção**; o golpe final; as linhas "Tomás viu tudo" e "Odran viu tudo".
+
+**Falar:**
+- "Mecânica 5, combate por turnos, com as quatro ações da CP4: golpear, defender, item e poder."
+- "Defender reduz o dano e abre uma brecha para o próximo golpe sair em dobro."
+- "Quando a Brenna cai, as testemunhas registram. A relação delas despenca, e isso muda como elas falam comigo depois."
+
+## Bloco 5 — Demônio Interior e Espelho da Alma (2:40 a 3:20)
+
+**Mostrar:** atacar o Odran até a **Ira passar de 40**; o alerta **"A Fera sussurra"**, com retrato e voz; as marcas de corrupção aparecendo no HUD; apertar **Tab** para abrir o Espelho da Alma; mostrar o botão **Poder demoníaco** agora habilitado.
+
+**Falar:**
+- "Mecânica 3: passando de 40 numa corrupção, a manifestação desperta."
+- "A fala dela é gerada pela LLM na hora, a voz é do Piper e o retrato é do SDXL. As três modalidades de IA no mesmo momento."
+- "Agora o HUD mostra marcas no personagem, e o poder demoníaco ficou disponível: dá mais dano, mas alimenta a Ira."
+- "Terceira tela do mockup: o Espelho da Alma, com os sete pecados e o progresso para cada final."
+
+## Bloco 6 — Tratamento de erro da IA (3:20 a 3:45)
+
+**Mostrar:** no terminal do Ollama, apertar **Ctrl+C**; voltar ao jogo e falar com um NPC; o aviso de modo offline; o jogo continuando.
+
+**Falar:**
+- "Se a IA cair no meio da partida, o jogo avisa e continua com respostas simples, em vez de travar."
+- "As regras de pecado seguem iguais, porque elas estão no código, não na IA."
+
+> Religue o Ollama depois (`ollama serve`), para o bloco 7 ter o modelo no ar.
+
+## Bloco 7 — Arquitetura, a parte de Front-end (3:45 a 4:40)
+
+**Diga em voz alta:** *"Agora a parte da disciplina de Front-end: a arquitetura da API."*
+
+**Mostrar, nesta ordem:**
+1. O diagrama do `README.md` (jogo → API → Ollama e Piper).
+2. No VS Code: `api/routers/ia_generativa.py` e `api/providers/ia_provider.py` lado a lado; depois `api/main.py`, na parte do CORS.
+3. O Swagger em `http://localhost:8000/docs`: executar uma rota **sem chave** (resposta **401**), clicar em **Authorize**, colar a chave fora da tela e executar de novo (**200**).
+4. O jogo ao lado do terminal da API: mandar uma fala e mostrar as linhas `POST /v1/jogo/.../comandos` e `POST /v1/ia-generativa/voz` aparecendo no log.
+
+**Falar:**
+- "Na CP4 o jogo chamava o Ollama direto. Agora ele chama só a nossa API, e só ela fala com o Ollama e com o Piper."
+- "Padrão rota e provider: o router recebe e valida; o provider é o único arquivo que conhece os serviços de IA."
+- "As rotas de IA são protegidas por API Key no header X-API-Key. Sem a chave, 401."
+- "O CORS libera só a origem do jogo, em localhost:5173."
+- "Essa é a evidência que o enunciado pede: cada fala do jogo vira uma chamada à nossa API, e o navegador nunca fala com a porta do Ollama."
+
+## Bloco 8 — Painel, final e fechamento (4:40 a 5:00)
+
+**Mostrar:** o painel **Streamlit** mandando uma fala e tocando o áudio; voltar ao jogo e usar o **Veredito** para encerrar; a tela de final; por último, o repositório no GitHub.
+
+**Falar:**
+- "O painel consome a mesma API via requests, só para testar as rotas fora do jogo."
+- "O fim de sessão é o veredito sobre o Tomás; o final depende dos pecados acumulados."
+- "Código do jogo, da API e do painel no repositório, com README de como rodar."
+
+---
+
+## Checklist do que **precisa** aparecer
+
+**PLN**
 - [ ] Menu principal
 - [ ] Gameplay com HUD
-- [ ] M1 a M5 em uso
+- [ ] 3 ou mais mecânicas (temos 5: diálogo, corrupção, demônio, memória, combate)
 - [ ] Texto gerado ao vivo
 - [ ] Voz tocando
 - [ ] Imagens do SDXL
-- [ ] Um final
-- [ ] Fallback
-- [ ] Testes
+- [ ] Um final (começo, meio e fim)
 
-## Vídeo 2: Front-end, arquitetura da API (alvo de 2 minutos)
+**Pontos extras**
+- [ ] Fallback quando a IA cai
+- [ ] Testes automatizados (pode entrar no fim, acelerado)
+- [ ] Mais de uma modalidade de IA integrada (texto, voz e imagem)
 
-O PDF pede um vídeo simples sobre o jogo e a arquitetura. O que é avaliado: rotas, provider, autenticação, CORS e o consumo via requests.
+**Front-end**
+- [ ] Router e provider no editor
+- [ ] Swagger em /docs
+- [ ] 401 sem chave e 200 com chave
+- [ ] CORS
+- [ ] Log da API enquanto o jogo roda
+- [ ] Painel consumindo via requests
+- [ ] Link do repositório
 
-| Tempo | O que mostrar | O que falar |
-|---|---|---|
-| 0:00 a 0:20 | Diagrama do README (jogo → API → Ollama e Piper) | Na CP4 o jogo chamava o Ollama direto. Agora o jogo e o painel chamam a API do grupo, e só a API fala com o Ollama (texto) e com o Piper (voz). |
-| 0:20 a 0:50 | VS Code: `api/routers/ia_generativa.py` e `api/providers/ia_provider.py` lado a lado; `main.py` com CORS | Padrão rota e provider: o router só recebe e valida; o provider é o único arquivo que conhece o Ollama e o Piper. O CORS libera o jogo web em localhost:5173. |
-| 0:50 a 1:15 | Swagger em /docs; executar GET /status sem chave (401); Authorize com a chave; executar de novo (200) | A autenticação é por API Key no header X-API-Key. Sem a chave, 401. Swagger automático em /docs. |
-| 1:15 a 1:40 | Jogo web ao lado do terminal da API; falar com um NPC; destacar as linhas POST no log | A evidência: cada fala do jogo vira uma chamada à nossa API. O navegador nunca chama a porta do Ollama. |
-| 1:40 a 2:00 | Painel Streamlit, aba Fala de NPC, Enviar; o áudio toca | O painel consome a mesma API via requests: classifica, gera a fala e a voz. |
-| 2:00 a 2:10 | Link do repositório no GitHub | Código do back-end, do jogo e do painel no repositório. |
+## Se faltar tempo
+
+Corte, nesta ordem: o painel Streamlit (bloco 8), o Espelho da Alma (bloco 5) e os testes. **Nunca corte** o fallback nem o bloco 7, porque são o ponto extra e a disciplina inteira de Front-end.
