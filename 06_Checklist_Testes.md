@@ -47,6 +47,8 @@ Balanceamento: o inquisitor tem 100 de vida. Brenna tem 100 de vida e revida 30;
 
 Rodados antes da entrega. Comandos no `README.md` de cada pasta.
 
+Em 09/10/2026 as quatro suítes foram executadas de novo na **máquina de gravação** (Windows 11, RTX 5060 Ti, Python 3.12): 45 + 48 + 7 testes e os 17 passos do e2e passaram. A rodada expôs três falhas só do Windows (leitura de log em cp1252, caminho `.venv/bin` e caminho dos prints com `URL.pathname`), corrigidas no commit `fix(testes): rodar a suíte e o e2e no Windows`. O e2e roda pelo Git Bash (`bash ./e2e/rodar.sh`), porque o `npm run e2e` chama um `.sh` pelo cmd.
+
 | Suíte | Onde | O que cobre | Resultado |
 |---|---|---|---|
 | Núcleo do jogo | `prototipo/tests` (unittest, 45 testes) | Classificação antes da fala, segredo só com confiança, memória sem repetir, corrupção, manifestação ao cruzar 40, Consumido, veredito e finais, combate (revide, defesa, poder, fuga, derrota, itens, save no meio da luta), limpeza de espaços da LLM | 45 OK |
