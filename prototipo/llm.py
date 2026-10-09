@@ -12,8 +12,15 @@ URL_PADRAO = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 MODELO_PADRAO = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
 
 
+URL_API_PADRAO = os.environ.get("OS7_API_URL", "http://localhost:8000")
+
+
 class ErroLLM(Exception):
-    pass
+    """`indisponivel=True`: o serviço está fora do ar (não adianta repetir); o jogo pode cair no modo offline."""
+
+    def __init__(self, mensagem, indisponivel=False):
+        super().__init__(mensagem)
+        self.indisponivel = indisponivel
 
 
 class ClienteOllama:
@@ -70,16 +77,98 @@ class ClienteOllama:
         except urllib.error.HTTPError as erro:
             detalhe = erro.read().decode("utf-8", "replace")
             if erro.code == 404:
-                raise ErroLLM(f"Modelo '{self.modelo}' não encontrado. Rode: ollama pull {self.modelo}") from erro
+                raise ErroLLM(
+                    f"Modelo '{self.modelo}' não encontrado. Rode: ollama pull {self.modelo}", indisponivel=True
+                ) from erro
             raise ErroLLM(f"Ollama devolveu HTTP {erro.code}: {detalhe}") from erro
         except (urllib.error.URLError, TimeoutError) as erro:
-            raise ErroLLM(f"Falha ao falar com o Ollama em {self.url}: {erro}") from erro
+            raise ErroLLM(f"Falha ao falar com o Ollama em {self.url}: {erro}", indisponivel=True) from erro
 
         conteudo = dados.get("message", {}).get("content", "")
         try:
             return json.loads(conteudo)
         except json.JSONDecodeError as erro:
             raise ErroLLM(f"O modelo não devolveu JSON válido: {conteudo[:200]}") from erro
+
+
+class ClienteAPI:
+    """CP5: o jogo chama a API do grupo (api/), que chama o Ollama. Mesma interface do ClienteOllama."""
+
+    def __init__(self, url=URL_API_PADRAO, api_key=None, timeout=200):
+        self.url = url.rstrip("/")
+        self.api_key = api_key if api_key is not None else os.environ.get("OS7_API_KEY", "")
+        # Maior que o OLLAMA_TIMEOUT da API (180 s), para o erro chegar como 503 da API e não como timeout daqui.
+        self.timeout = timeout
+        self.modelo = "?"  # Quem escolhe o modelo é a API; preenchido por verificar() e a cada resposta.
+
+    def _requisitar(self, metodo, rota, corpo=None, timeout=None):
+        requisicao = urllib.request.Request(
+            f"{self.url}{rota}",
+            data=None if corpo is None else json.dumps(corpo).encode("utf-8"),
+            headers={"Content-Type": "application/json", "X-API-Key": self.api_key},
+            method=metodo,
+        )
+        try:
+            with urllib.request.urlopen(requisicao, timeout=timeout or self.timeout) as resposta:
+                return json.loads(resposta.read().decode("utf-8"))
+        except urllib.error.HTTPError as erro:
+            try:
+                detalhe = json.loads(erro.read().decode("utf-8")).get("detail", "")
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                detalhe = ""
+            if erro.code == 401:
+                raise ErroLLM("API recusou a chave. Confira OS7_API_KEY (igual ao API_KEY do api/.env).") from erro
+            # 503 = a API está no ar, mas o Ollama não: repetir não resolve.
+            raise ErroLLM(f"API devolveu HTTP {erro.code}: {detalhe}", indisponivel=erro.code == 503) from erro
+        except (urllib.error.URLError, TimeoutError) as erro:
+            raise ErroLLM(
+                f"API do jogo não está rodando em {self.url}. Suba com: cd api && uvicorn main:app --env-file .env",
+                indisponivel=True,
+            ) from erro
+
+    def verificar(self):
+        status = self._requisitar("GET", "/v1/ia-generativa/status", timeout=10)
+        self.modelo = f"{status['modelo_texto']} via API"
+        if not status["texto"]:
+            raise ErroLLM(f"API no ar, mas sem LLM: {status['detalhe']['texto']}", indisponivel=True)
+        return status
+
+    def aquecer(self):
+        # Uma geração curta faz a API carregar o modelo no Ollama antes do primeiro turno (20-70 s na 1ª vez).
+        self.gerar_json([{"role": "user", "content": "ok"}], {"type": "object", "properties": {}}, 0)
+
+    def gerar_json(self, mensagens, schema, temperatura=None):
+        corpo = {"mensagens": mensagens, "schema_resposta": schema}
+        if temperatura is not None:
+            corpo["temperatura"] = temperatura
+        resposta = self._requisitar("POST", "/v1/ia-generativa/texto", corpo)
+        self.modelo = f"{resposta['modelo']} via API"
+        return resposta["conteudo"]
+
+
+class ClienteComFallback:
+    """Se a IA cair no meio da partida, troca para o cliente reserva (offline) em vez de travar o jogo."""
+
+    def __init__(self, principal, reserva, avisar=print):
+        self.principal = principal
+        self.reserva = reserva
+        self.avisar = avisar
+        self.em_fallback = False
+
+    @property
+    def modelo(self):
+        return self.reserva.modelo if self.em_fallback else self.principal.modelo
+
+    def gerar_json(self, mensagens, schema, temperatura=None):
+        if not self.em_fallback:
+            try:
+                return self.principal.gerar_json(mensagens, schema, temperatura)
+            except ErroLLM as erro:
+                if not erro.indisponivel:
+                    raise  # Resposta ruim do modelo: o jogo já tenta de novo em _gerar.
+                self.em_fallback = True
+                self.avisar(f"[IA indisponível: {erro}]\n[seguindo em modo offline: falas simples por palavra-chave]")
+        return self.reserva.gerar_json(mensagens, schema, temperatura)
 
 
 class ClienteFalso:
