@@ -17,3 +17,6 @@ MEMORIA.md
 api/.env
 api/partidas/
 relatorio/cp5/relatorio_cp5.html
+
+# Configuração da IDE (IntelliJ/PyCharm)
+.idea/
