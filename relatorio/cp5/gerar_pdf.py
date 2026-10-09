@@ -156,7 +156,7 @@ def montar():
     <tr><td>Menu e gameplay do mockup</td><td>Menu, Gameplay, Espelho da Alma e Final (seção 4)</td></tr>
     <tr><td>Fim de sessão</td><td>Veredito sobre Tomás: Redenção, Marcado pela Ira/Avareza; também Consumido (pecado em 100) e Morto em Cinzaforte (derrota em combate)</td></tr>
     <tr><td>IA generativa integrada</td><td><strong>Texto</strong> ao vivo (qwen2.5:7b via Ollama), <strong>voz</strong> ao vivo (Piper TTS) e <strong>imagens</strong> do SDXL geradas na CP4, todas pela API do grupo</td></tr>
-    <tr><td>Extras para a nota 10</td><td>2 modalidades em tempo real (texto e voz); 5 mecânicas (mínimo 3); 98 testes automatizados (43 do núcleo, 48 da API, 7 do painel) mais um teste ponta a ponta de 17 passos; fallback para modo offline quando a IA cai; feedback visual (indicador "pensando", animações, barras)</td></tr>
+    <tr><td>Extras para a nota 10</td><td>2 modalidades em tempo real (texto e voz); 5 mecânicas (mínimo 3); 100 testes automatizados (45 do núcleo, 48 da API, 7 do painel) mais um teste ponta a ponta de 17 passos; fallback para modo offline quando a IA cai; feedback visual (indicador "pensando", animações, barras)</td></tr>
   </tbody>
 </table>
 

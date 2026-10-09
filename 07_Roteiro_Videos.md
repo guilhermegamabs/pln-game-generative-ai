@@ -23,7 +23,7 @@ O PDF pede: menu, jogabilidade das mecânicas e o momento em que o conteúdo de 
 | 3:05 a 3:25 | Tab: Espelho da Alma | A terceira tela do mockup: os sete pecados, as manifestações e o progresso para cada final. |
 | 3:25 a 3:50 | Parar o Ollama (Ctrl+C) e falar com o Odran; aviso de modo offline; o jogo segue | Tratamento de erro da IA em tempo real: se o modelo cair, o jogo avisa e continua com falas simples, sem travar. |
 | 3:50 a 4:20 | Veredito, Condenar; tela "Marcado pela Ira" | O fim da sessão: o veredito sobre o Tomás. O final depende dos pecados: Redenção, Marcado, Consumido ou derrota em combate. |
-| 4:20 a 4:45 | Terminal: `npm run e2e` passando (pode acelerar) e os resultados do pytest | Os testes automatizados cobrem as mecânicas: 43 do núcleo, 48 da API, 7 do painel e um teste ponta a ponta que joga a partida inteira no navegador. |
+| 4:20 a 4:45 | Terminal: `npm run e2e` passando (pode acelerar) e os resultados do pytest | Os testes automatizados cobrem as mecânicas: 45 do núcleo, 48 da API, 7 do painel e um teste ponta a ponta que joga a partida inteira no navegador. |
 
 Checklist do que **precisa** aparecer:
 - [ ] Menu principal

@@ -33,6 +33,7 @@ class NPC:
     relacao: int = 0
     ouro: int = 0
     vivo: bool = True
+    genero: str = "m"  # só para concordância nos textos ("morto"/"morta")
     vida_max: int = 30
     dano: int = 5
     vida: int | None = None

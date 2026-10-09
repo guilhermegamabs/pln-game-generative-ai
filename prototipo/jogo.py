@@ -184,9 +184,9 @@ class Jogo:
     def cmd_falar(self, nome):
         if not nome:
             for npc in self.npcs.values():
-                estado = "morto" if not npc.vivo else f"relação {npc.relacao:+d} ({rotulo_relacao(npc.relacao)})"
+                estado = _morto(npc) if not npc.vivo else f"relação {npc.relacao:+d} ({rotulo_relacao(npc.relacao)})"
                 marcador = ">" if npc.id == self.atual else " "
-                self.saida(f" {marcador} {npc.id:<8} {npc.nome} — {estado}")
+                self.saida(f" {marcador} {npc.id:<8} {npc.nome}: {estado}")
             return
         npc, fala = self._achar_npc(nome)
         if npc is None:
@@ -308,7 +308,8 @@ class Jogo:
             return
         npc.ouro -= quantia
         self.jogador.ouro += quantia
-        delta = corrupcao.delta_relacao("ganancia", 3, npc.reage_bem_a)
+        # Sem o bônus de reage_bem_a: Odran aprova ganância, mas não quando a vítima é ele (no playtest, roubá-lo dava +9).
+        delta = corrupcao.delta_relacao("ganancia", 3)
         npc.ajustar_relacao(delta)
         npc.lembrar(f"Percebeu que o inquisitor roubou {quantia} moedas dele.", MAX_MEMORIAS)
         self.saida(f"\nVocê tira {quantia} moedas de {npc.nome}. Ele percebe (relação {delta:+d}).")
@@ -351,7 +352,7 @@ class Jogo:
 
     def cmd_memorias(self, _):
         npc = self.npcs[self.atual]
-        self.saida(f"\n{npc.nome} — relação {npc.relacao:+d} ({rotulo_relacao(npc.relacao)})")
+        self.saida(f"\n{npc.nome}: relação {npc.relacao:+d} ({rotulo_relacao(npc.relacao)})")
         for memoria in npc.memorias or ["(nenhuma lembrança)"]:
             self.saida(f"  - {memoria}")
 
@@ -394,7 +395,7 @@ class Jogo:
     def _npc_atual_vivo(self):
         npc = self.npcs[self.atual]
         if not npc.vivo:
-            self.saida(f"{npc.nome} está morto. Use /falar para escolher outra pessoa.")
+            self.saida(f"{npc.nome} está {_morto(npc)}. Use /falar para escolher outra pessoa.")
             return None
         return npc
 
@@ -500,7 +501,7 @@ class Jogo:
         nome = self.manifestacoes[pecado]["nome"]
         self._encerrar(
             f"Consumido pela {NOMES[pecado]}",
-            f"{nome} toma o controle. O inquisitor que chegou a Cinzaforte não existe mais — "
+            f"{nome} toma o controle. O inquisitor que chegou a Cinzaforte não existe mais: "
             f"agora a cidade tem uma nova manifestação.",
         )
 
@@ -556,6 +557,7 @@ class Jogo:
                     "relacao": npc.relacao,
                     "rotulo_relacao": rotulo_relacao(npc.relacao),
                     "vivo": npc.vivo,
+                    "genero": npc.genero,
                     "ouro": npc.ouro,
                     "vida": npc.vida,
                     "vida_max": npc.vida_max,
@@ -576,6 +578,10 @@ class Jogo:
         visiveis = [p for p in PECADOS if p in ("ira", "avareza") or self.jogador.pecados[p] > 0]
         medidores = " | ".join(f"{NOMES[p]} {_barra(self.jogador.pecados[p])} {self.jogador.pecados[p]}" for p in visiveis)
         return f"  Vida {self.jogador.vida}/{self.jogador.vida_max} | {medidores} | Ouro {self.jogador.ouro}"
+
+
+def _morto(npc):
+    return "morta" if npc.genero == "f" else "morto"
 
 
 def _sem_acento(texto):

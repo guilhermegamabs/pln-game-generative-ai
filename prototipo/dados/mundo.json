@@ -28,6 +28,7 @@
       "reage_bem_a": ["violencia", "ameaca"],
       "relacao": 0,
       "ouro": 40,
+      "genero": "f",
       "vida_max": 100,
       "dano": 30
     },

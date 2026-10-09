@@ -40,6 +40,7 @@ A IA não tinha permissão para publicar nada no GitHub nem para mexer em proces
 | 16:58 | "quero que implemente" | Barra de vida, combate por turnos e inventário (prompt-chave 8) |
 | 17:07 | "o jogo nao ta ocupando a minha tela toda, e parece que esta quebrado" | Correção do palco (prompt-chave 9) |
 | 17:12 | "pode fazer tudo ai" | Checklist, roteiro dos vídeos, prints de evidência e PDF (prompt-chave 10) |
+| 17:40 | "consegue abrir o jogo no navegador e fazer todos os testes possiveis?" | Os 28 testes do checklist no Chrome com o modelo real (prompt-chave 11) |
 
 ## 3. Prompts-chave
 
@@ -238,6 +239,25 @@ A IA ofereceu implementar os três para tirar essas linhas do diário, e o grupo
 - **A dificuldade do combate estava errada.** Ao escrever o teste da derrota, a IA percebeu que quase não dava para perder: a Brenna, o NPC mais forte, tirava só 48 de vida numa luta inteira. Ela passou a ter 100 de vida e 30 de dano, e o Odran passou a revidar 10. Agora uma luta descuidada mata, e defender, a poção e o poder do demônio passam a fazer diferença. A rota da derrota foi conferida no código antes de entrar no checklist.
 - **O print do Swagger com a chave mostrava a chave real da API**, tanto no campo do Authorize quanto no `curl`. Os prints foram refeitos com a chave mascarada na página. O script de captura falha se a chave ainda aparecer.
 - As colunas "Resultado obtido" do checklist ficaram em branco de propósito. O enunciado pede testes realizados pelo grupo.
+
+### Prompt-chave 11: rodada de testes no navegador com o modelo real
+
+**Prompt (17:40):** "consegue abrir o jogo no navegador e fazer todos os testes possiveis?"
+
+**O que a IA fez:**
+- Abriu o jogo numa aba do Chrome e executou os 28 testes do checklist, com o qwen2.5:7b real.
+- Derrubou o Ollama para testar o modo offline e usou o Swagger e o painel em outra aba.
+- O resultado de cada teste está no checklist, seção 3.
+
+**O que a rodada achou e foi corrigido:**
+1. **Roubar o Odran aumentava a relação dele (+9).** A regra da CP4 dá bônus a quem "reage bem" à ganância, e ela estava sendo aplicada também à vítima. Agora a vítima sempre desaprova (-18), e há um teste novo para isso.
+2. **Depois de matar um NPC, a caixa de diálogo continuava nele**, com o campo de fala e o Atacar ativos. Agora o retrato fica em cinza e a fala e as ações travam, indicando a praça.
+3. **O painel "Intenção lida" somava efeitos que não eram da fala.** Ele mostrava "Suborno" ao lado da Ira ganha num combate. Agora o painel guarda só o efeito da última fala lida.
+4. **O relato da poção não dizia qual item foi usado nem quanto curou.**
+5. **Textos com "Brenna morto"** passaram a concordar com o gênero.
+6. **O texto do final Consumido tinha um travessão**, que o grupo evita.
+
+**O que não foi possível verificar:** a IA não consegue ouvir o áudio. A voz foi conferida pelas requisições à rota `/voz` e pelo player do painel.
 
 ## 4. Como o código principal funciona (texto do grupo)
 

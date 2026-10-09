@@ -47,6 +47,10 @@ export function pecadoDominante(pecados: Record<Pecado, number>): [Pecado, numbe
   return (Object.entries(pecados) as [Pecado, number][]).reduce((a, b) => (b[1] > a[1] ? b : a))
 }
 
+export function morto(npc: { genero?: string }): string {
+  return npc.genero === 'f' ? 'morta' : 'morto'
+}
+
 export function sinal(valor: number): string {
   return valor > 0 ? `+${valor}` : `${valor}`
 }

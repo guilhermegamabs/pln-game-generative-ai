@@ -1,6 +1,6 @@
 import { PECADOS, type Estado, type Pecado } from '../api'
 import { Medidores } from '../componentes/Medidores'
-import { DEMONIOS, NOMES, pecadoDominante, sinal } from '../dados'
+import { DEMONIOS, NOMES, pecadoDominante, sinal, morto } from '../dados'
 
 // Pecados ativos no MVP (escopo da CP4: Ira e Avareza); os outros aparecem bloqueados até despertarem.
 const ATIVOS: Pecado[] = ['ira', 'avareza']
@@ -43,7 +43,7 @@ export function Espelho({ estado, aoFechar }: { estado: Estado; aoFechar: () => 
                     {n.rotulo_relacao} ({sinal(n.relacao)})
                   </b>
                 ) : (
-                  <i>morto</i>
+                  <i>{morto(n)}</i>
                 )}
               </span>
             ))}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, ErroAPI, type RespostaJogo, type Ultimo } from '../api'
 import { Medidores } from '../componentes/Medidores'
-import { DEMONIOS, INTENCOES, NOMES, RETRATOS, sinal } from '../dados'
+import { DEMONIOS, INTENCOES, NOMES, RETRATOS, morto, sinal } from '../dados'
 import { calar, falar } from '../voz'
 import { Espelho } from './Espelho'
 
@@ -30,10 +30,10 @@ function narracao(linhas: string[], falaNpc?: string): string[] {
     )
 }
 
-function relatoCombate(c: NonNullable<Ultimo['combate']>, nome: string, brecha: boolean): string {
+function relatoCombate(c: NonNullable<Ultimo['combate']>, nome: string, brecha: boolean, item?: Ultimo['item'] | null): string {
   const partes: string[] = []
   if (c.acao === 'defender') partes.push(`Você se defende.${brecha ? ' Brecha aberta: o próximo golpe sai em dobro.' : ''}`)
-  if (c.acao === 'item') partes.push('Você usa um item.')
+  if (c.acao === 'item') partes.push(item ? `Você usa ${item.nome} (${item.efeito}).` : 'Você usa um item.')
   if (c.acao === 'fugir') return `Você fugiu. ${nome} não vai esquecer.`
   if (c.dano_causado) partes.push(`${c.poder ? 'Com o poder demoníaco, você' : 'Você'} causa ${c.dano_causado} de dano.`)
   if (c.resultado === 'venceu') partes.push(`${nome} cai.`)
@@ -49,6 +49,9 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
   const [memoria, setMemoria] = useState<Ultimo['memoria'] | null>(null)
   const [sussurro, setSussurro] = useState<Sussurro | null>(null)
   const [deltas, setDeltas] = useState<Ultimo['pecados']>({})
+  // Efeito da última fala lida, guardado à parte: ações e combate depois dela não entram no painel "Intenção lida".
+  const [deltasLeitura, setDeltasLeitura] = useState<Ultimo['pecados']>({})
+  const [itemUsado, setItemUsado] = useState<Ultimo['item'] | null>(null)
   const [texto, setTexto] = useState('')
   const [pensando, setPensando] = useState<string | null>(null)
   const [segundos, setSegundos] = useState(0)
@@ -66,6 +69,9 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
   const npc = estado.npcs.find((n) => n.id === estado.atual)!
   const falaDoAtual = fala && fala.npc === npc.id ? fala : null
   const combate = estado.jogador.combate
+  const nomeCurto = npc.nome.split(',')[0]
+  // Depois de uma morte o diálogo continua no NPC caído: trava o que não faz sentido e indica a praça.
+  const caido = !npc.vivo
   const golpeDoAtual = golpe && golpe.npc === npc.id ? golpe : null
   const item = (id: string) => estado.jogador.inventario.find((i) => i.id === id)
   const poder = estado.jogador.manifestacoes.length
@@ -114,7 +120,11 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
         setDeltas(u.pecados ?? {})
         if (u.fala) setFala(u.fala)
         setGolpe(u.combate ?? null)
-        if (u.leitura) setLeitura(u.leitura)
+        if (u.leitura) {
+          setLeitura(u.leitura)
+          setDeltasLeitura(u.pecados ?? {})
+        }
+        setItemUsado(u.item ?? null)
         if (u.memoria) setMemoria(u.memoria)
         if (u.manifestacao) setSussurro(u.manifestacao)
         setLinhas(narracao(r.linhas, u.fala?.texto))
@@ -189,7 +199,7 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
             <img src={RETRATOS[n.id]} alt="" />
             <span>
               {n.nome.split(',')[0]}
-              <small>{n.vivo ? `${n.rotulo_relacao} · ${sinal(n.relacao)}` : 'morto'}</small>
+              <small>{n.vivo ? `${n.rotulo_relacao} · ${sinal(n.relacao)}` : morto(n)}</small>
             </span>
           </button>
         ))}
@@ -231,7 +241,7 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
             {INTENCOES[leitura.intencao] ?? leitura.intencao} · intensidade {leitura.intensidade}
           </span>
           <div className="efeitos">
-            {Object.entries(deltas ?? {}).map(([p, v]) => (
+            {Object.entries(deltasLeitura ?? {}).map(([p, v]) => (
               <span key={p}>
                 {NOMES[p as keyof typeof NOMES]} <b className={v! > 0 ? 'sobe' : 'desce'}>{sinal(v!)}</b> ·{' '}
               </span>
@@ -279,7 +289,7 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
       )}
 
       <div className="painel dialogo">
-        <img className="retrato" src={RETRATOS[npc.id]} alt={npc.nome} />
+        <img className={`retrato${caido ? ' caido' : ''}`} src={RETRATOS[npc.id]} alt={npc.nome} />
         <div className="npc-cabecalho">
           <span className="npc-nome">{npc.nome}</span>
           <span className={`npc-relacao ${relacaoClasse}`}>
@@ -308,7 +318,9 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
               {pensando}… <small>{segundos} s</small>
             </span>
           ) : golpeDoAtual ? (
-            <span className="relato-combate">{relatoCombate(golpeDoAtual, npc.nome.split(',')[0], combate?.brecha ?? false)}</span>
+            <span className="relato-combate">{relatoCombate(golpeDoAtual, npc.nome.split(',')[0], combate?.brecha ?? false, itemUsado)}</span>
+          ) : caido ? (
+            <span className="descricao">{nomeCurto} está {morto(npc)}. Escolha outra pessoa na praça.</span>
           ) : falaDoAtual ? (
             `“${falaDoAtual.texto}”`
           ) : (
@@ -322,11 +334,13 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
             value={texto}
             maxLength={500}
             autoFocus
-            disabled={!!pensando || !!combate}
-            placeholder={combate ? 'Em combate: escolha uma ação abaixo' : `Diga algo a ${npc.nome.split(',')[0]}…`}
+            disabled={!!pensando || !!combate || caido}
+            placeholder={
+              combate ? 'Em combate: escolha uma ação abaixo' : caido ? `${nomeCurto} está ${morto(npc)}: escolha alguém na praça` : `Diga algo a ${nomeCurto}…`
+            }
             onChange={(e) => setTexto(e.target.value)}
           />
-          <button className="botao" type="submit" disabled={!!pensando || !!combate || !texto.trim()}>
+          <button className="botao" type="submit" disabled={!!pensando || !!combate || caido || !texto.trim()}>
             Falar
           </button>
         </form>
@@ -361,13 +375,13 @@ export function Gameplay({ inicial, voz, setVoz, aoTerminar, aoSair }: Props) {
           </div>
         ) : (
           <div className="acoes">
-            <button className="botao perigo" onClick={atacar} disabled={!!pensando}>
+            <button className="botao perigo" onClick={atacar} disabled={!!pensando || caido}>
               {confirmarAtaque ? 'Confirmar ataque?' : 'Atacar'}
             </button>
-            <button className="botao" onClick={() => enviar('/roubar', 'Você estende a mão')} disabled={!!pensando}>
+            <button className="botao" onClick={() => enviar('/roubar', 'Você estende a mão')} disabled={!!pensando || caido}>
               Roubar
             </button>
-            <button className="botao" onClick={() => enviar('/doar 10', 'Você conta as moedas')} disabled={!!pensando || estado.jogador.ouro < 10}>
+            <button className="botao" onClick={() => enviar('/doar 10', 'Você conta as moedas')} disabled={!!pensando || caido || estado.jogador.ouro < 10}>
               Doar 10
             </button>
             <button className="botao" onClick={() => setPainel(painel === 'itens' ? null : 'itens')}>

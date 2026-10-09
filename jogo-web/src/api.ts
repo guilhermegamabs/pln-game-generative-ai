@@ -10,6 +10,7 @@ export interface NPC {
   relacao: number
   rotulo_relacao: string
   vivo: boolean
+  genero: 'm' | 'f'
   ouro: number
   vida: number
   vida_max: number

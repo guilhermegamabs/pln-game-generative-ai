@@ -306,6 +306,16 @@ class TestJogo(unittest.TestCase):
         self.assertEqual(carregado.npcs["brenna"].vida, 75)
         self.assertEqual(carregado.jogador.vida, 70)
 
+    def test_roubar_desagrada_a_vitima_mesmo_quem_aprova_ganancia(self):
+        self.jogo.processar("/falar odran")
+        self.jogo.processar("/roubar")
+        self.assertLess(self.jogo.npcs["odran"].relacao, 0)  # antes: +9, porque Odran "reage bem" a ganância
+
+    def test_texto_de_morte_concorda_com_o_genero(self):
+        self.matar("brenna")
+        self.jogo.processar("oi")
+        self.assertIn("Capitã Brenna está morta", self.linhas[-1])
+
     def test_save_e_load_preservam_estado(self):
         self.jogo.processar("/roubar")
         carregado = self.novo_jogo(ClienteFalso(), carregar=True)
