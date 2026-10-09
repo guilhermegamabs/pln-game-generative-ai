@@ -11,3 +11,9 @@ relatorio/img/
 
 # Anotações internas do grupo
 MEMORIA.md
+
+# Ambiente e segredos da API (CP5)
+.venv/
+api/.env
+api/partidas/
+relatorio/cp5/relatorio_cp5.html

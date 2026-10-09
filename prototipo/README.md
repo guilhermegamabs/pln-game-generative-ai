@@ -11,11 +11,17 @@ Cena: Praça do Pelourinho, em Cinzaforte (cidade da Ira). Tomás é acusado de 
 
 ## Como rodar
 
-```bash
-ollama pull qwen2.5:7b
-```
+Desde a CP5 o jogo **não chama mais o Ollama direto**: ele chama a API do grupo (`../api/`), que chama o Ollama. Suba a API primeiro (ver `../api/README.md`):
 
 ```bash
+ollama pull qwen2.5:7b
+cd ../api && ../.venv/bin/uvicorn main:app --env-file .env
+```
+
+Em outro terminal, com a mesma chave do `api/.env`:
+
+```bash
+export OS7_API_KEY=sua-chave        # Windows (PowerShell): $env:OS7_API_KEY="sua-chave"
 python main.py
 ```
 
@@ -23,9 +29,13 @@ Opções:
 
 | Flag | Efeito |
 |---|---|
-| `--modelo llama3.2:3b` | Troca o modelo (também via variável `OLLAMA_MODEL`) |
+| `--api URL` | Endereço da API (padrão `http://localhost:8000`, também via `OS7_API_URL`) |
+| `--direto` | Modo da CP4: fala direto com o Ollama, sem a API |
+| `--modelo llama3.2:3b` | Troca o modelo no modo `--direto` (com a API, o modelo é o `OLLAMA_MODEL` do `api/.env`) |
 | `--novo` | Ignora o save e recomeça |
-| `--offline` | Sem Ollama: respostas falsas por palavra-chave (para testar o loop) |
+| `--offline` | Sem IA: respostas falsas por palavra-chave (para testar o loop) |
+
+**Fallback:** se a API ou o Ollama cair no meio da partida (HTTP 503 ou conexão recusada), o jogo avisa e segue no modo offline em vez de travar.
 
 **Modelo:** `qwen2.5:7b` é o padrão (4,7 GB de VRAM; cerca de 5,5 s por turno numa RTX 5060 Ti, somando classificação e fala): classifica e mantém personagem bem melhor. Em máquina sem GPU boa, use `--modelo llama3.2:3b`. A comparação entre os dois está em `../02_Testes_LLM.md`.
 
@@ -38,11 +48,16 @@ Texto livre = fala com o NPC atual.
 | Comando | O que faz |
 |---|---|
 | `/falar [nome]` | Troca de NPC (sem nome, lista presentes com relação) |
-| `/atacar` | Mata o NPC atual (combate simplificado). Ira +20, testemunhas lembram |
+| `/atacar` | Começa um combate por turnos com o NPC atual (Ira +5) ou, já em combate, golpeia (25 de dano). O NPC revida com o dano dele. Derrubar o oponente: Ira +15 e as testemunhas lembram |
+| `/defender` | Em combate: recebe só 1/4 do dano e o próximo golpe sai em dobro |
+| `/poder` | Em combate: usa o poder da manifestação desperta (45 de dano), e o pecado dela sobe 8 |
+| `/fugir` | Em combate: sai da luta; o NPC fica ferido e lembra |
+| `/item [nome]` | Usa `pocao` (+35 de vida) ou `agua_benta` (-10 no pecado mais alto); sem nome, lista o inventário. Em combate, gasta o turno |
 | `/roubar` | Rouba até 25 moedas. Avareza +15 |
 | `/doar <valor>` | Dá moedas. Reduz Avareza, melhora relação |
 | `/status` | "Espelho da Alma": 7 medidores, aparência, manifestações, eventos |
 | `/memorias` | O que o NPC atual lembra de você |
+| `/veredito absolver\|condenar` | Julga Tomás e encerra a partida (final pelos pecados) |
 | `/sair` | Salva e sai |
 
 ## Como funciona
@@ -82,7 +97,7 @@ NPCs corrompidos aprovam o próprio pecado: Brenna (Ira) gosta de violência e a
 | `jogo.py` | Turno de diálogo, comandos, consequências, finais |
 | `corrupcao.py` | Intenções, pesos dos pecados, limiares, aparência |
 | `prompts.py` | Prompts de NPC e de manifestação |
-| `llm.py` | Cliente Ollama, cliente falso, registro de chamadas |
+| `llm.py` | Cliente da API (padrão), cliente Ollama direto, fallback, cliente falso, registro de chamadas |
 | `estado.py` | Jogador, NPC, save/load JSON |
 | `dados/mundo.json` | Cena, fichas dos NPCs, 7 manifestações |
 | `logs/sessao_*.jsonl` | **Cada chamada: prompt completo, resposta, modelo, latência** (`v1_`…`v5_` = rodadas documentadas) |

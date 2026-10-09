@@ -7,15 +7,26 @@ from pathlib import Path
 
 from estado import carregar_mundo
 from jogo import Jogo
-from llm import MODELO_PADRAO, ClienteFalso, ClienteOllama, ClienteRegistrado, ErroLLM
+from llm import (
+    MODELO_PADRAO,
+    URL_API_PADRAO,
+    ClienteAPI,
+    ClienteComFallback,
+    ClienteFalso,
+    ClienteOllama,
+    ClienteRegistrado,
+    ErroLLM,
+)
 
 BASE = Path(__file__).resolve().parent
 
 
 def main():
     parser = argparse.ArgumentParser(description="Protótipo OS 7 PECADOS — diálogo com NPCs via Ollama")
-    parser.add_argument("--modelo", default=MODELO_PADRAO, help=f"modelo do Ollama (padrão: {MODELO_PADRAO})")
-    parser.add_argument("--offline", action="store_true", help="respostas falsas por palavra-chave, sem Ollama")
+    parser.add_argument("--api", default=URL_API_PADRAO, help=f"URL da API do jogo (padrão: {URL_API_PADRAO})")
+    parser.add_argument("--direto", action="store_true", help="modo da CP4: fala direto com o Ollama, sem a API")
+    parser.add_argument("--modelo", default=MODELO_PADRAO, help=f"modelo do Ollama no modo --direto (padrão: {MODELO_PADRAO})")
+    parser.add_argument("--offline", action="store_true", help="respostas falsas por palavra-chave, sem IA")
     parser.add_argument("--novo", action="store_true", help="ignora o save e começa do zero")
     args = parser.parse_args()
 
@@ -26,14 +37,16 @@ def main():
     if args.offline:
         cliente = ClienteFalso()
     else:
-        cliente = ClienteOllama(args.modelo)
+        cliente = ClienteOllama(args.modelo) if args.direto else ClienteAPI(args.api)
         try:
             cliente.verificar()
             print(f"[carregando {cliente.modelo} na memória...]", flush=True)
             cliente.aquecer()
         except ErroLLM as erro:
-            print(f"[erro] {erro}\nPara testar sem Ollama: python main.py --offline")
+            print(f"[erro] {erro}\nPara testar sem IA: python main.py --offline")
             return 1
+        # Verificado na abertura; se cair durante a partida, o jogo continua offline em vez de travar.
+        cliente = ClienteComFallback(cliente, ClienteFalso())
 
     carimbo = datetime.now().strftime("%Y%m%d_%H%M%S")
     cliente = ClienteRegistrado(cliente, BASE / "logs" / f"sessao_{carimbo}.jsonl")

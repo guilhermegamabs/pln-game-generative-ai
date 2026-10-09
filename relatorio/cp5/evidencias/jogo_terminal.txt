@@ -1,0 +1,16 @@
+[carregando qwen2.5:7b via API na memória...]
+[modelo: qwen2.5:7b via API]
+
+=== Praça do Pelourinho, em Cinzaforte, cidade dominada pela Ira ===
+Uma multidão furiosa cerca Tomás, acusado de roubar um amuleto de ouro do mercador Odran. A Capitã Brenna quer enforcá-lo agora mesmo. O inquisitor acaba de chegar à praça.
+
+Você está diante de Tomás. Ferreiro de 30 anos, magro, com as mãos amarradas e o rosto machucado pela multidão.
+Digite /ajuda para ver os comandos.
+  Vida 100/100 | Ira ░░░░░░░░░░ 0 | Avareza ░░░░░░░░░░ 0 | Ouro 30
+
+> 
+Tomás: Obrigado, senhor... eu juro que não fiz nada com o amuleto. Peço perdão, mas não peguei nada!
+  [intenção: compaixao (2) · relação com Tomás +16]
+  Vida 100/100 | Ira ░░░░░░░░░░ 0 | Avareza ░░░░░░░░░░ 0 | Ouro 30
+
+> Partida salva. Até a próxima, inquisitor.

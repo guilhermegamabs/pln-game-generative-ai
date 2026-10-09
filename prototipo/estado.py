@@ -14,6 +14,11 @@ class Jogador:
     manifestacoes: list = field(default_factory=list)
     eventos: list = field(default_factory=list)
     final: str | None = None
+    vida: int = 100
+    vida_max: int = 100
+    inventario: dict = field(default_factory=lambda: {"pocao": 2, "agua_benta": 1})
+    # Combate em andamento: {"npc": id, "brecha": bool}. Fica no save para a partida voltar no meio da luta.
+    combate: dict | None = None
 
 
 @dataclass
@@ -28,8 +33,16 @@ class NPC:
     relacao: int = 0
     ouro: int = 0
     vivo: bool = True
+    genero: str = "m"  # só para concordância nos textos ("morto"/"morta")
+    vida_max: int = 30
+    dano: int = 5
+    vida: int | None = None
     memorias: list = field(default_factory=list)
     historico: list = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.vida is None:
+            self.vida = self.vida_max
 
     def lembrar(self, memoria, limite):
         # O modelo costuma devolver a mesma memória em turnos seguidos; repetida só gasta contexto.

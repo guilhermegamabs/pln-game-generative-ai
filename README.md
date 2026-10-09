@@ -1,4 +1,4 @@
-# OS 7 PECADOS — CP4 · IA Generativa e Game Design
+# OS 7 PECADOS — IA Generativa e Game Design (CP4 e CP5)
 
 RPG narrativo de fantasia sombria em que uma LLM local é o motor de interação: o jogador conversa em texto livre com os NPCs, eles lembram do que ele fez, e cada escolha alimenta um dos sete pecados capitais.
 
@@ -6,7 +6,35 @@ RPG narrativo de fantasia sombria em que uma LLM local é o motor de interação
 
 📄 **Entrega:** [`OS_7_PECADOS_CP4.pdf`](OS_7_PECADOS_CP4.pdf) — relatório técnico + mockup.
 
-## Onde está cada evidência
+## CP5: MVP jogável
+
+| Pasta | Conteúdo |
+|---|---|
+| [`jogo-web/`](jogo-web/) | **O jogo**: React + TypeScript (Vite) com as telas do mockup (menu, gameplay, Espelho da Alma, final). [Como rodar e jogar](jogo-web/README.md) |
+| [`api/`](api/) | **API FastAPI do grupo**: rotas de IA generativa (texto e voz) e do jogo, com API Key e Swagger em `/docs`. [Detalhes](api/README.md) |
+| [`painel/`](painel/) | Painel Streamlit que consome a API via `requests` |
+| [`prototipo/`](prototipo/) | Núcleo do jogo (regras, prompts, memória), o mesmo da CP4, agora usado pela API; também roda no terminal |
+
+```
+navegador (jogo-web) ──X-API-Key──► API FastAPI ──► Ollama (qwen2.5:7b, texto)
+painel / terminal ─────X-API-Key──►     │       └─► Piper TTS (voz)
+                                        └─► núcleo do jogo (prototipo/)
+```
+
+Para jogar: Ollama rodando, `api/` no ar (`uvicorn main:app --env-file .env`) e `jogo-web/` com `npm run dev`. Os passos completos estão nos READMEs de cada pasta.
+
+Testes: `api/` (pytest), `painel/` (pytest), `prototipo/` (unittest) e `jogo-web/` (`npm run e2e`, Chrome headless jogando a partida inteira).
+
+| Documento | Conteúdo |
+|---|---|
+| [`OS_7_PECADOS_CP5.pdf`](OS_7_PECADOS_CP5.pdf) | Entrega consolidada: MVP, como executar, arquitetura e evidências da API, telas, diários e checklist |
+| [`04_Diario_Vibe_Coding.md`](04_Diario_Vibe_Coding.md) | Prompts-chave reais, o que a IA gerou e o que foi ajustado |
+| [`05_Diario_de_Mudancas.md`](05_Diario_de_Mudancas.md) | Divergências em relação à CP4, com justificativa técnica |
+| [`06_Checklist_Testes.md`](06_Checklist_Testes.md) | Testes manuais (esperado e obtido) e testes automatizados |
+| [`07_Roteiro_Videos.md`](07_Roteiro_Videos.md) | Roteiro dos vídeos de PLN e de Front-end |
+| [`relatorio/cp5/`](relatorio/cp5/) | Gerador do PDF (`gerar_pdf.py`), prints e logs de evidência |
+
+## CP4: onde está cada evidência
 
 | Pasta / arquivo | Conteúdo |
 |---|---|
